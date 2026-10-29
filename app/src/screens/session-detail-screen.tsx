@@ -2,7 +2,7 @@ import { useWindowSize } from '@gpuix/react'
 
 import { usePalette, withAlpha, type Palette } from '../theme'
 import { Badge, Card, Column, KeyHint, Row, Stat, Txt } from '../ui/kit'
-import { MetricLine, mutedColor } from '../ui/group-c-widgets'
+import { MetricLine } from '../ui/list-widgets'
 import { ScreenFrame } from '../ui/screen-frame'
 
 export type StageStatus = 'COMPLETED' | 'SKIPPED' | 'FAILED'
@@ -57,7 +57,7 @@ function SessionCard({ session }: { session: SessionDetailView['session'] }) {
         {session.repository ? <MetricLine label="Repository" value={session.repository} color={palette.info} /> : null}
         <MetricLine label="Started" value={session.started} color={palette.duration} />
         {session.branch ? <MetricLine label="Branch" value={session.branch} color={palette.stageInfo} /> : null}
-        {session.commit ? <MetricLine label="Commit" value={session.commit} color={mutedColor(palette)} /> : null}
+        {session.commit ? <MetricLine label="Commit" value={session.commit} color={palette.muted} /> : null}
       </Column>
     </Card>
   )
@@ -68,7 +68,7 @@ function PerformanceCard({ performance }: { performance: SessionDetailView['perf
   if (!performance) {
     return (
       <Card title="PERFORMANCE" grow testId="session-detail-performance">
-        <Txt color={mutedColor(palette)} size={14}>
+        <Txt color={palette.muted} size={14}>
           No performance data available
         </Txt>
       </Card>
@@ -77,7 +77,7 @@ function PerformanceCard({ performance }: { performance: SessionDetailView['perf
   return (
     <Card title="PERFORMANCE" grow testId="session-detail-performance">
       <Row gap={8}>
-        <Txt color={mutedColor(palette)} size={13} wrap={false}>
+        <Txt color={palette.muted} size={13} wrap={false}>
           Tier/Rank
         </Txt>
         <Badge color={palette.keyAction}>{performance.tierRank}</Badge>
@@ -105,7 +105,7 @@ function StageMetric({ label, value, color }: { label: string; value: string | n
   const palette = usePalette()
   return (
     <Column gap={1}>
-      <Txt color={mutedColor(palette)} size={11} weight={700} wrap={false}>
+      <Txt color={palette.muted} size={11} weight={700} wrap={false}>
         {label}
       </Txt>
       <Txt color={color} size={14} weight={600} mono wrap={false}>
@@ -144,7 +144,7 @@ function StageRow({ stage }: { stage: SessionStageView }) {
         <Badge color={tone}>{stage.status}</Badge>
         <div style={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'row', justifyContent: 'flex-end' }}>
           {stage.file ? (
-            <Txt color={mutedColor(palette)} size={12} mono wrap={false}>
+            <Txt color={palette.muted} size={12} mono wrap={false}>
               {stage.file}
             </Txt>
           ) : null}
@@ -177,7 +177,7 @@ function StagesCard({ view }: { view: SessionDetailView }) {
   return (
     <Card title={title} grow testId="session-detail-stages">
       {total === 0 ? (
-        <Txt color={mutedColor(palette)} size={14}>
+        <Txt color={palette.muted} size={14}>
           No stage data available
         </Txt>
       ) : (

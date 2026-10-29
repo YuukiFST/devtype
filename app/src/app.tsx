@@ -35,7 +35,7 @@ function UnportedScreen({ snapshot }: { snapshot: Snapshot }) {
       centered
       hints={<KeyHint keyLabel="ESC" label="Back" sendKey="escape" color={palette.keyBack} />}
     >
-      <Txt color={palette.textSecondary} size={15} align="center">
+      <Txt color={palette.muted} size={15} align="center">
         {`The ${snapshot.screen} screen has no GUI yet.`}
       </Txt>
     </ScreenFrame>

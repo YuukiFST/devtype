@@ -99,7 +99,7 @@ export function SelectableRow({ label, index, selectedIndex, selectKey, testId }
         borderColor: isSelected ? withAlpha(palette.keyAction, 0.6) : '#00000000',
       }}
     >
-      <Txt color={isSelected ? palette.keyAction : palette.textSecondary} size={12} weight={700} mono wrap={false}>
+      <Txt color={isSelected ? palette.keyAction : palette.muted} size={12} weight={700} mono wrap={false}>
         {isSelected ? '▶' : ' '}
       </Txt>
       <Txt color={isSelected ? palette.title : palette.text} size={14} weight={isSelected ? 700 : 400} wrap={false}>

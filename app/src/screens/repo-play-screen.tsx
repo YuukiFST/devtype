@@ -1,4 +1,4 @@
-import { usePalette, withAlpha } from '../theme'
+import { usePalette } from '../theme'
 import { Card, KeyHint, Txt } from '../ui/kit'
 import { ScreenFrame } from '../ui/screen-frame'
 import { CacheLegend, PlayedRepositoryRow, type PlayedRepository } from './played-repository'
@@ -26,7 +26,7 @@ export function RepoPlayScreen({ view }: { view: RepoPlayView }) {
     >
       <Card title="PLAYED REPOSITORIES" grow>
         {view.repositories.length === 0 ? (
-          <Txt color={withAlpha(palette.text, 0.6)} size={14}>
+          <Txt color={palette.muted} size={14}>
             No repositories played yet.
           </Txt>
         ) : (

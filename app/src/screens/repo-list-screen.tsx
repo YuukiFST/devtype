@@ -31,7 +31,7 @@ export function RepoListScreen({ view }: { view: RepoListView }) {
     >
       <Card padding={16}>
         <Row gap={10}>
-          <Txt color={withAlpha(palette.text, 0.6)} size={13} weight={600} wrap={false}>
+          <Txt color={palette.muted} size={13} weight={600} wrap={false}>
             Cache Directory:
           </Txt>
           <Txt color={palette.text} size={13} mono wrap={false} testId="repo-list-cache-dir">
@@ -41,7 +41,7 @@ export function RepoListScreen({ view }: { view: RepoListView }) {
       </Card>
       <Card title="REPOSITORY LIST" grow>
         {view.repositories.length === 0 ? (
-          <Txt color={withAlpha(palette.text, 0.6)} size={14}>
+          <Txt color={palette.muted} size={14}>
             No repositories played yet.
           </Txt>
         ) : (
@@ -65,7 +65,7 @@ export function RepoListScreen({ view }: { view: RepoListView }) {
               </div>
             ))}
             {hidden > 0 ? (
-              <Txt color={withAlpha(palette.text, 0.6)} size={12}>
+              <Txt color={palette.muted} size={12}>
                 {`and ${hidden} more`}
               </Txt>
             ) : null}

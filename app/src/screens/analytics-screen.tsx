@@ -2,8 +2,8 @@ import { useWindowSize } from '@gpuix/react'
 
 import { usePalette, withAlpha, type Palette } from '../theme'
 import { Card, Column, KeyHint, Pressable, Row, Stat, Txt, useStore } from '../ui/kit'
-import { BarChart, LineChart } from '../ui/group-c-charts'
-import { ListRow, MetricLine, mutedColor, selectListRow, useScrollWindow } from '../ui/group-c-widgets'
+import { BarChart, LineChart } from '../ui/charts'
+import { ListRow, MetricLine, selectListRow, useScrollWindow } from '../ui/list-widgets'
 import { ScreenFrame } from '../ui/screen-frame'
 import type { PaletteRole } from '../view-models'
 
@@ -107,7 +107,7 @@ function TabBar({ view }: { view: AnalyticsView }) {
             backgroundColor: tab.active ? withAlpha(palette.keyAction, 0.16) : palette.backgroundSecondary,
           }}
         >
-          <Txt color={tab.active ? palette.title : mutedColor(palette)} size={14} weight={tab.active ? 700 : 500} wrap={false}>
+          <Txt color={tab.active ? palette.title : palette.muted} size={14} weight={tab.active ? 700 : 500} wrap={false}>
             {tab.name}
           </Txt>
         </Pressable>
@@ -121,14 +121,14 @@ function RankedList({ title, rows, empty }: { title: string; rows: { name: strin
   return (
     <Card title={title} grow padding={16}>
       {rows.length === 0 ? (
-        <Txt color={mutedColor(palette)} size={13}>
+        <Txt color={palette.muted} size={13}>
           {empty}
         </Txt>
       ) : (
         <Column gap={2}>
           {rows.slice(0, RANKED_ROWS).map((row, i) => (
             <Row key={row.name} gap={8}>
-              <Txt color={mutedColor(palette)} size={13} mono wrap={false}>{`${i + 1}.`}</Txt>
+              <Txt color={palette.muted} size={13} mono wrap={false}>{`${i + 1}.`}</Txt>
               <Txt color={palette.text} size={13} wrap={false}>
                 {row.name}
               </Txt>
@@ -183,7 +183,7 @@ function OverviewTab({ data }: { data: AnalyticsData }) {
           />
         ) : (
           <Column grow align="center" justify="center">
-            <Txt color={mutedColor(palette)} size={14} align="center">
+            <Txt color={palette.muted} size={14} align="center">
               {activity.emptyMessage}
             </Txt>
           </Column>
@@ -221,7 +221,7 @@ function TrendCard({
     <Card title={title} grow padding={18} testId={testId}>
       {trend.points.length === 0 ? (
         <Column grow align="center" justify="center">
-          <Txt color={mutedColor(palette)} size={14} align="center">
+          <Txt color={palette.muted} size={14} align="center">
             {empty}
           </Txt>
         </Column>
@@ -291,10 +291,10 @@ function DetailPanel({
     return (
       <Card title={title} grow testId="analytics-detail">
         <Column grow align="center" justify="center" gap={8}>
-          <Txt color={mutedColor(palette)} size={16} weight={700}>
+          <Txt color={palette.muted} size={16} weight={700}>
             {noneTitle}
           </Txt>
-          <Txt color={mutedColor(palette)} size={13}>
+          <Txt color={palette.muted} size={13}>
             {noneHint}
           </Txt>
         </Column>
@@ -304,7 +304,7 @@ function DetailPanel({
   return (
     <Card title={title} grow testId="analytics-detail">
       <Row gap={8}>
-        <Txt color={mutedColor(palette)} size={14} wrap={false}>
+        <Txt color={palette.muted} size={14} wrap={false}>
           {label}
         </Txt>
         <Txt color={palette.info} size={16} weight={700} wrap={false}>
@@ -381,7 +381,7 @@ function ListTab({
       <div style={{ display: 'flex', flexDirection: 'column', width: Math.round(size.width * 0.38), flexShrink: 0 }}>
         <Card title={listTitle} grow padding={16} testId="analytics-list">
           {list.items.length === 0 ? (
-            <Txt color={mutedColor(palette)} size={13}>
+            <Txt color={palette.muted} size={13}>
               {emptyList}
             </Txt>
           ) : (
@@ -425,7 +425,7 @@ function AnalyticsContent({ view }: { view: AnalyticsView }) {
   if (!data) {
     return (
       <Column grow align="center" justify="center">
-        <Txt color={mutedColor(palette)} size={15}>
+        <Txt color={palette.muted} size={15}>
           {view.loadingMessage}
         </Txt>
       </Column>

@@ -81,7 +81,7 @@ export function Pressable({ onPress, children, testId, disabled, style, hoverBac
 /** Keyboard key cap, e.g. `SPACE` or `←→`. */
 export function KeyCap({ label, color }: { label: string; color?: string }) {
   const palette = usePalette()
-  const tone = color ?? palette.textSecondary
+  const tone = color ?? palette.muted
   return (
     <div
       style={{
@@ -184,7 +184,7 @@ export function Card({
 export function SectionLabel({ children, color }: { children: ReactNode; color?: string }) {
   const palette = usePalette()
   return (
-    <Txt color={color ?? palette.textSecondary} size={11} weight={700} wrap={false}>
+    <Txt color={color ?? palette.muted} size={11} weight={700} wrap={false}>
       {children}
     </Txt>
   )

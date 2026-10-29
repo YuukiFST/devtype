@@ -35,7 +35,7 @@ export function TitleScreen({ view }: { view: TitleView }) {
     >
       <Column align="center" gap={10}>
         <Wordmark size={64} />
-        <Txt color={palette.textSecondary} size={16}>
+        <Txt color={palette.muted} size={16}>
           {view.subtitle}
         </Txt>
       </Column>
@@ -82,7 +82,7 @@ export function TitleScreen({ view }: { view: TitleView }) {
             <Txt color={palette.text} size={14} align="center">
               {selected.description}
             </Txt>
-            <Txt color={palette.textSecondary} size={13} align="center">
+            <Txt color={palette.muted} size={13} align="center">
               {selected.subtitle}
             </Txt>
             <Txt color={palette.info} size={12} align="center">

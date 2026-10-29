@@ -29,7 +29,7 @@ export function SessionSummaryScreen({ view }: { view: SessionSummaryView }) {
     >
       <Card accent={rankColor} testId="summary-rank">
         <Column align="center" gap={10}>
-          <Txt color={palette.textSecondary} size={13} weight={700}>
+          <Txt color={palette.muted} size={13} weight={700}>
             {"YOU'RE:"}
           </Txt>
           <StyledLines lines={rank.art} size={13} fallback={rankColor} />

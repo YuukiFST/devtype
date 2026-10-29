@@ -4,10 +4,16 @@ import { createContext, useContext } from 'react'
 
 import { PALETTE_ROLES, type PaletteRole, type RawPalette } from './view-models'
 
-export type Palette = Record<PaletteRole, string>
+export type Palette = Record<PaletteRole, string> & {
+  /**
+   * Secondary text that stays legible at GUI sizes. Theme `textSecondary`
+   * colors are tuned for terminal cells and fade out on small text.
+   */
+  muted: string
+}
 
 /** Roles a theme leaves at the terminal default get these instead. */
-const DEFAULT_ROLE_COLORS: Palette = {
+const DEFAULT_ROLE_COLORS: Record<PaletteRole, string> = {
   border: '#3a3f4b',
   title: '#e6e6e6',
   text: '#d4d4d4',
@@ -43,12 +49,16 @@ const DEFAULT_ROLE_COLORS: Palette = {
 }
 
 export function resolvePalette(raw: RawPalette): Palette {
-  const palette = { ...DEFAULT_ROLE_COLORS }
+  const roles = { ...DEFAULT_ROLE_COLORS }
   for (const role of PALETTE_ROLES) {
     const color = raw[role]
-    if (color) palette[role] = color
+    if (color) roles[role] = color
   }
-  return palette
+  return withDerivedColors(roles)
+}
+
+function withDerivedColors(roles: Record<PaletteRole, string>): Palette {
+  return { ...roles, muted: withAlpha(roles.text, 0.6) }
 }
 
 /** `#rrggbb` plus an alpha channel, for tints of a theme color. */
@@ -80,7 +90,7 @@ export const FONTS = {
       : 'Menlo',
 }
 
-export const ThemeContext = createContext<Palette>(DEFAULT_ROLE_COLORS)
+export const ThemeContext = createContext<Palette>(withDerivedColors(DEFAULT_ROLE_COLORS))
 
 export function usePalette(): Palette {
   return useContext(ThemeContext)

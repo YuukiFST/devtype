@@ -25,7 +25,7 @@ export function AnimationScreen({ view }: { view: AnimationView | null }) {
       hints={
         <>
           <div style={{ flexGrow: 1 }} />
-          <KeyHint keyLabel="S" label="Skip" sendKey="s" color={palette.textSecondary} testId="animation-skip" />
+          <KeyHint keyLabel="S" label="Skip" sendKey="s" color={palette.muted} testId="animation-skip" />
         </>
       }
     >
@@ -53,7 +53,7 @@ export function AnimationScreen({ view }: { view: AnimationView | null }) {
           ))}
           <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', height: LINE_HEIGHT }}>
             {view.phase === 'pause' ? (
-              <Txt color={palette.textSecondary} size={LINE_FONT_SIZE + 4} mono wrap={false} testId="animation-dots">
+              <Txt color={palette.muted} size={LINE_FONT_SIZE + 4} mono wrap={false} testId="animation-dots">
                 {'.'.repeat(view.pauseDots)}
               </Txt>
             ) : null}

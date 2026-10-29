@@ -45,7 +45,7 @@ export function LanguageList({ languages }: { languages: string[] }) {
   const palette = usePalette()
   if (languages.length === 0) {
     return (
-      <Txt color={withAlpha(palette.text, 0.6)} size={13} wrap={false}>
+      <Txt color={palette.muted} size={13} wrap={false}>
         No challenges
       </Txt>
     )
@@ -71,7 +71,7 @@ export function PlayedRepositoryRow({ repo, showUrl }: { repo: PlayedRepository;
         <LanguageList languages={repo.languages} />
       </div>
       {showUrl ? (
-        <Txt color={withAlpha(palette.text, 0.6)} size={12} mono wrap={false}>
+        <Txt color={palette.muted} size={12} mono wrap={false}>
           {repo.url}
         </Txt>
       ) : null}

@@ -1,16 +1,8 @@
 import { useRef, type ReactNode } from 'react'
 
 import type { EngineStore } from '../engine-store'
-import { usePalette, withAlpha, type Palette } from '../theme'
+import { usePalette, withAlpha } from '../theme'
 import { Pressable, Txt } from './kit'
-
-/**
- * Secondary text that stays legible on every theme: some gittype themes set
- * `textSecondary` close to the background, which a terminal shows but a GUI washes out.
- */
-export function mutedColor(palette: Palette): string {
-  return withAlpha(palette.text, 0.6)
-}
 
 /**
  * First visible row of a list window. Like ratatui's ListState offset, it moves

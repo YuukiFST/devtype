@@ -2,7 +2,7 @@ import { useWindowSize } from '@gpuix/react'
 
 import { usePalette } from '../theme'
 import { Badge, Card, Column, KeyHint, Row, Txt, useStore } from '../ui/kit'
-import { Cell, ListRow, mutedColor, selectListRow, useScrollWindow } from '../ui/group-c-widgets'
+import { Cell, ListRow, selectListRow, useScrollWindow } from '../ui/list-widgets'
 import { ScreenFrame } from '../ui/screen-frame'
 
 export type RecordRow = {
@@ -36,7 +36,7 @@ const COLUMNS = { date: 150, score: 70, cpm: 70, accuracy: 80, stages: 64, durat
 
 function HeaderRow() {
   const palette = usePalette()
-  const color = mutedColor(palette)
+  const color = palette.muted
   return (
     <div style={{ display: 'flex', flexDirection: 'row', gap: 12, paddingLeft: 13, paddingRight: 13 }}>
       <Cell width={COLUMNS.date} color={color} mono={false} weight={700}>
@@ -75,7 +75,7 @@ function SessionRow({ row, index, view }: { row: RecordRow; index: number; view:
       testId={`records-row-${index}`}
       onPress={() => selectListRow(store, view.selectedIndex, index, 'enter')}
     >
-      <Cell width={COLUMNS.date} color={mutedColor(palette)}>
+      <Cell width={COLUMNS.date} color={palette.muted}>
         {row.date}
       </Cell>
       <Cell grow color={selected ? palette.title : palette.text} mono={false} weight={selected ? 700 : 500}>
@@ -105,7 +105,7 @@ function EmptyRecords({ lines }: { lines: string[] }) {
   return (
     <Column align="center" justify="center" grow gap={8}>
       {lines.map((line, i) => (
-        <Txt key={i} color={i === 0 ? palette.text : mutedColor(palette)} size={i === 0 ? 16 : 14} align="center">
+        <Txt key={i} color={i === 0 ? palette.text : palette.muted} size={i === 0 ? 16 : 14} align="center">
           {line}
         </Txt>
       ))}
@@ -128,7 +128,7 @@ export function RecordsScreen({ view }: { view: RecordsView }) {
         <Row gap={8}>
           <Badge color={palette.border}>{`Filter: ${view.filter}`}</Badge>
           <Badge color={palette.info}>{`Sort: ${view.sort} ${view.sortDescending ? '↓' : '↑'}`}</Badge>
-          <Badge color={mutedColor(palette)}>{`Sessions: ${view.sessionCount}`}</Badge>
+          <Badge color={palette.muted}>{`Sessions: ${view.sessionCount}`}</Badge>
         </Row>
       }
       hints={
@@ -163,7 +163,7 @@ export function RecordsScreen({ view }: { view: RecordsView }) {
               ))}
             </div>
             {view.sessions.length > visibleRows ? (
-              <Txt color={mutedColor(palette)} size={12} align="right">
+              <Txt color={palette.muted} size={12} align="right">
                 {`${start + 1}-${start + visible.length} of ${view.sessions.length}`}
               </Txt>
             ) : null}

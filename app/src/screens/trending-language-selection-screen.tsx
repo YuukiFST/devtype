@@ -1,4 +1,4 @@
-import { usePalette, withAlpha } from '../theme'
+import { usePalette } from '../theme'
 import { Card, KeyHint, Txt } from '../ui/kit'
 import { ScreenFrame } from '../ui/screen-frame'
 import { SelectionList } from './selection-list'
@@ -48,7 +48,7 @@ export function TrendingLanguageSelectionScreen({ view }: { view: TrendingLangua
           renderRow={(language, index) => (
             <>
               <div style={{ width: 28, flexShrink: 0 }}>
-                <Txt color={withAlpha(palette.text, 0.6)} size={13} mono wrap={false}>
+                <Txt color={palette.muted} size={13} mono wrap={false}>
                   {`${String(index + 1).padStart(2, ' ')}.`}
                 </Txt>
               </div>

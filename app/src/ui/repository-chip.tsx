@@ -12,12 +12,12 @@ export function RepositoryChip({ repository }: { repository: RepositoryInfo | nu
         {`${repository.user}/${repository.name}`}
       </Txt>
       {repository.branch ? (
-        <Txt color={palette.textSecondary} size={13} wrap={false}>
+        <Txt color={palette.muted} size={13} wrap={false}>
           {repository.branch}
         </Txt>
       ) : null}
       {repository.commit ? (
-        <Txt color={palette.textSecondary} size={13} mono wrap={false}>
+        <Txt color={palette.muted} size={13} mono wrap={false}>
           {repository.commit}
         </Txt>
       ) : null}

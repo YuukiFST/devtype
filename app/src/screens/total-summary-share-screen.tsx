@@ -1,4 +1,4 @@
-import { ShareMenuScreen } from '../ui/group-b-share'
+import { ShareMenuScreen } from '../ui/share-menu'
 import type { TotalSummaryShareView } from '../view-models'
 
 export type { TotalSummaryShareView }

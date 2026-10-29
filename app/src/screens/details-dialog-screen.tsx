@@ -27,7 +27,7 @@ function BestRecord({ row }: { row: BestRecordRow }) {
           ) : null}
         </>
       ) : (
-        <Txt color={palette.textSecondary} size={14}>
+        <Txt color={palette.muted} size={14}>
           No previous record
         </Txt>
       )}

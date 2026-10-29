@@ -1,4 +1,4 @@
-import { usePalette, withAlpha } from '../theme'
+import { usePalette } from '../theme'
 import { Badge, Card, KeyHint, Txt } from '../ui/kit'
 import { ScreenFrame } from '../ui/screen-frame'
 import { SelectionList } from './selection-list'
@@ -45,13 +45,13 @@ export function TrendingRepositorySelectionScreen({ view }: { view: TrendingRepo
         <Txt color={palette.title} size={20} weight={700}>
           Select Trending Repository to Play
         </Txt>
-        <Txt color={withAlpha(palette.text, 0.6)} size={13}>
+        <Txt color={palette.muted} size={13}>
           Currently trending repositories
         </Txt>
       </div>
       <Card title="TRENDING REPOSITORIES" grow>
         {view.repositories.length === 0 ? (
-          <Txt color={withAlpha(palette.text, 0.6)} size={14}>
+          <Txt color={palette.muted} size={14}>
             No trending repositories found.
           </Txt>
         ) : (
@@ -63,7 +63,7 @@ export function TrendingRepositorySelectionScreen({ view }: { view: TrendingRepo
             renderRow={(repo, index) => (
               <>
                 <div style={{ width: 28, flexShrink: 0 }}>
-                  <Txt color={withAlpha(palette.text, 0.6)} size={13} mono wrap={false}>
+                  <Txt color={palette.muted} size={13} mono wrap={false}>
                     {`${String(index + 1).padStart(2, ' ')}.`}
                   </Txt>
                 </div>
@@ -76,7 +76,7 @@ export function TrendingRepositorySelectionScreen({ view }: { view: TrendingRepo
                   <Badge color={palette.success}>{repo.language}</Badge>
                 </div>
                 <div style={{ flexGrow: 1, flexShrink: 1, minWidth: 0, overflow: 'hidden' }}>
-                  <Txt color={withAlpha(palette.text, 0.6)} size={13} wrap={false}>
+                  <Txt color={palette.muted} size={13} wrap={false}>
                     {repo.description}
                   </Txt>
                 </div>

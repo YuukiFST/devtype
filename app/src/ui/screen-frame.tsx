@@ -46,7 +46,7 @@ export function ScreenFrame({ title, trailing, hints, children, centered, maxWid
       >
         <Wordmark />
         <div style={{ width: 1, height: 18, backgroundColor: withAlpha(palette.border, 0.6) }} />
-        <Txt color={palette.textSecondary} size={14} weight={600} wrap={false}>
+        <Txt color={palette.muted} size={14} weight={600} wrap={false}>
           {title}
         </Txt>
         <div style={{ flexGrow: 1 }} />

@@ -3,7 +3,7 @@ import { useRef } from 'react'
 
 import { FONTS, usePalette, withAlpha } from '../theme'
 import { Card, KeyHint, Modal, Row, Txt, useStore } from '../ui/kit'
-import { TabBar } from '../ui/group-d-tabs'
+import { TabBar } from '../ui/tabs'
 import { ScreenFrame } from '../ui/screen-frame'
 import type { StyledLine } from '../view-models'
 
@@ -190,7 +190,7 @@ function StarMessage({ starMessage }: { starMessage: HelpView['starMessage'] }) 
       <Txt color={palette.text} size={12} wrap={false}>
         Star us on GitHub
       </Txt>
-      <Txt color={palette.textSecondary} size={12} weight={600} wrap={false}>
+      <Txt color={palette.muted} size={12} weight={600} wrap={false}>
         {starMessage.url}
       </Txt>
       <Txt color={palette.text} size={12} wrap={false}>

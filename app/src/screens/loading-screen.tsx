@@ -37,7 +37,7 @@ export type LoadingView = {
 
 function StepIcon({ status }: { status: StepStatus }) {
   const palette = usePalette()
-  const color = status === 'done' ? palette.success : status === 'current' ? palette.warning : palette.textSecondary
+  const color = status === 'done' ? palette.success : status === 'current' ? palette.warning : palette.muted
   return (
     <div
       style={{
@@ -74,7 +74,7 @@ export function LoadingScreen({ view }: { view: LoadingView }) {
             {view.message}
           </Txt>
         </Row>
-        <Txt color={palette.textSecondary} size={14} align="center">
+        <Txt color={palette.muted} size={14} align="center">
           {view.description}
         </Txt>
       </Column>
@@ -85,7 +85,7 @@ export function LoadingScreen({ view }: { view: LoadingView }) {
             <Row key={step.type} gap={12}>
               <StepIcon status={step.status} />
               <Txt
-                color={step.status === 'pending' ? palette.textSecondary : palette.text}
+                color={step.status === 'pending' ? palette.muted : palette.text}
                 size={14}
                 weight={step.status === 'current' ? 700 : 400}
                 wrap={false}

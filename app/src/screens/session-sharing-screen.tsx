@@ -1,4 +1,4 @@
-import { ShareMenuScreen } from '../ui/group-b-share'
+import { ShareMenuScreen } from '../ui/share-menu'
 import type { SessionSharingView } from '../view-models'
 
 export type { SessionSharingView }

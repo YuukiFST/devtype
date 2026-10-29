@@ -1,6 +1,6 @@
 import { usePalette } from '../theme'
 import { Badge, Card, Column, KeyHint, Row, Txt } from '../ui/kit'
-import { SelectableRow, TabBar } from '../ui/group-d-tabs'
+import { SelectableRow, TabBar } from '../ui/tabs'
 import { ScreenFrame } from '../ui/screen-frame'
 
 export type SettingsView = {

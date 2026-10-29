@@ -1,5 +1,4 @@
 import { usePalette, withAlpha } from '../theme'
-import { mutedColor } from './group-c-widgets'
 import { Txt } from './kit'
 
 const Y_AXIS_WIDTH = 56
@@ -65,7 +64,7 @@ export function LineChart({
           }}
         >
           {[...yLabels].reverse().map((label, i) => (
-            <Txt key={i} color={mutedColor(palette)} size={11} mono wrap={false}>
+            <Txt key={i} color={palette.muted} size={11} mono wrap={false}>
               {label}
             </Txt>
           ))}
@@ -84,13 +83,13 @@ export function LineChart({
       </div>
       <div style={{ display: 'flex', flexDirection: 'row', height: X_AXIS_HEIGHT, alignItems: 'flex-end' }}>
         <div style={{ width: Y_AXIS_WIDTH, flexShrink: 0 }}>
-          <Txt color={mutedColor(palette)} size={10} weight={700} wrap={false}>
+          <Txt color={palette.muted} size={10} weight={700} wrap={false}>
             {yTitle}
           </Txt>
         </div>
         <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', width: plotWidth }}>
           {xLabels.map((label, i) => (
-            <Txt key={i} color={mutedColor(palette)} size={11} mono wrap={false}>
+            <Txt key={i} color={palette.muted} size={11} mono wrap={false}>
               {label}
             </Txt>
           ))}
@@ -135,7 +134,7 @@ export function BarChart({
               backgroundColor: value > 0 ? color : withAlpha(palette.text, 0.08),
             }}
           />
-          <Txt color={mutedColor(palette)} size={10} mono wrap={false}>
+          <Txt color={palette.muted} size={10} mono wrap={false}>
             {labels[i] ?? ''}
           </Txt>
         </div>

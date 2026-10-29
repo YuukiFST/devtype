@@ -27,7 +27,7 @@ function runStyle(kind: RowRunKind, palette: Palette): { color: string; backgrou
       return { color: palette.untypedText }
     case 'comment':
     case 'context':
-      return { color: palette.textSecondary }
+      return { color: palette.muted }
   }
 }
 
@@ -95,7 +95,7 @@ function StartPrompt() {
         Ready when you are
       </Txt>
       <Row gap={10}>
-        <Txt color={palette.textSecondary} size={15}>
+        <Txt color={palette.muted} size={15}>
           Press
         </Txt>
         <KeyHint keyLabel="SPACE" label="to start" sendKey="space" color={palette.success} testId="typing-start" />
@@ -134,7 +134,7 @@ function OptionsDialog({ skipsRemaining }: { skipsRemaining: number }) {
           label={skipsRemaining > 0 ? `Skip challenge (${skipsRemaining})` : 'No skips remaining'}
           sendKey="s"
           disabled={skipsRemaining === 0}
-          color={skipsRemaining > 0 ? palette.info : palette.textSecondary}
+          color={skipsRemaining > 0 ? palette.info : palette.muted}
           testId="dialog-skip"
         />
         <KeyHint keyLabel="Q" label="Quit (fail)" sendKey="q" color={palette.error} testId="dialog-quit" />
@@ -161,7 +161,7 @@ export function TypingScreen({ view }: { view: TypingView }) {
             </Txt>
             <div style={{ flexGrow: 1 }} />
             {view.header?.language ? <Badge color={palette.info}>{view.header.language}</Badge> : null}
-            {view.header ? <Badge color={palette.textSecondary}>{view.header.difficulty}</Badge> : null}
+            {view.header ? <Badge color={palette.muted}>{view.header.difficulty}</Badge> : null}
           </Row>
         </Card>
 
@@ -175,11 +175,11 @@ export function TypingScreen({ view }: { view: TypingView }) {
             <Stat label="MISTAKES" value={metrics.mistakes} color={palette.error} testId="metric-mistakes" />
             <Stat label="STREAK" value={metrics.streak} color={palette.stageInfo} />
             <Stat label="TIME" value={`${metrics.timeSecs}s`} color={palette.duration} />
-            <Stat label="SKIPS" value={metrics.skipsRemaining} color={palette.textSecondary} />
+            <Stat label="SKIPS" value={metrics.skipsRemaining} color={palette.muted} />
           </Row>
           <Row gap={12}>
             <ProgressBar percent={view.progress} color={palette.typedText} />
-            <Txt color={palette.textSecondary} size={12} mono wrap={false} testId="typing-progress">
+            <Txt color={palette.muted} size={12} mono wrap={false} testId="typing-progress">
               {`${view.progress}%`}
             </Txt>
           </Row>
