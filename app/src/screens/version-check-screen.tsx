@@ -1,5 +1,5 @@
 import { HostKeyHint } from '../host/host-keys'
-import { usePalette, withAlpha } from '../theme'
+import { usePalette } from '../theme'
 import { Card, Column, Row, Txt } from '../ui/kit'
 import { ScreenFrame } from '../ui/screen-frame'
 
@@ -56,7 +56,7 @@ export function VersionCheckScreen({ view }: { view: VersionCheckView }) {
             </Row>
           </Column>
           <Column gap={6} align="center">
-            <Txt color={withAlpha(palette.text, 0.6)} size={13} align="center">
+            <Txt color={palette.muted} size={13} align="center">
               To update, download the latest release:
             </Txt>
             <Txt color={palette.info} size={13} mono wrap={false}>
