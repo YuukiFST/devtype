@@ -105,6 +105,8 @@ pub enum RecordsAction {
     ViewDetails(i64),
 }
 
+mod records_view_model;
+
 pub trait RecordsScreenInterface: Screen {}
 
 #[derive(shaku::Component)]
@@ -606,6 +608,10 @@ impl Screen for RecordsScreen {
 
     fn cleanup(&self) -> Result<()> {
         Ok(())
+    }
+
+    fn view_model(&self) -> serde_json::Value {
+        self.build_view_model()
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
