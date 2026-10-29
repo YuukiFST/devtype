@@ -71,7 +71,7 @@ impl SharingService {
             SharingPlatform::Reddit => {
                 let best_rank = Rank::for_score(metrics.session_score);
                 let title = format!(
-                    "Achieved {} rank with {:.0} points in gittype!",
+                    "Achieved {} rank with {:.0} points in devtype!",
                     best_rank.name(),
                     metrics.session_score
                 );
@@ -91,7 +91,7 @@ impl SharingService {
                 // Facebook's quote parameter may not work reliably, but it's still the best option
                 format!(
                     "https://www.facebook.com/sharer/sharer.php?u={}&quote={}",
-                    urlencoding::encode("https://github.com/unhappychoice/gittype"),
+                    urlencoding::encode("https://github.com/YuukiFST/devtype"),
                     urlencoding::encode(&text)
                 )
             }
@@ -102,7 +102,7 @@ impl SharingService {
         let best_rank = Rank::for_score(metrics.session_score);
         if let Some(repo) = repo_info {
             format!(
-                "Achieved \"{}\" with {:.0}pts on [{}/{}] in gittype! CPM: {:.0}, Mistakes: {} 🚀\n\nType your own code! https://github.com/unhappychoice/gittype\n\n#gittype #typing #coding",
+                "Achieved \"{}\" with {:.0}pts on [{}/{}] in devtype! CPM: {:.0}, Mistakes: {} 🚀\n\nType your own code! https://github.com/YuukiFST/devtype\n\n#devtype #typing #coding",
                 best_rank.name(),
                 metrics.session_score,
                 repo.user_name,
@@ -112,7 +112,7 @@ impl SharingService {
             )
         } else {
             format!(
-                "Achieved \"{}\" with {:.0}pts in gittype! CPM: {:.0}, Mistakes: {} 🚀\n\nType your own code! https://github.com/unhappychoice/gittype\n\n#gittype #typing #coding",
+                "Achieved \"{}\" with {:.0}pts in devtype! CPM: {:.0}, Mistakes: {} 🚀\n\nType your own code! https://github.com/YuukiFST/devtype\n\n#devtype #typing #coding",
                 best_rank.name(),
                 metrics.session_score,
                 metrics.overall_cpm,

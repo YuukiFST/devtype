@@ -227,7 +227,7 @@ impl SharingView {
 
         // Thanks message
         let thanks = Paragraph::new(Line::from(vec![Span::styled(
-            "Thanks for playing GitType!",
+            "Thanks for playing devtype!",
             Style::default()
                 .fg(colors.success())
                 .add_modifier(Modifier::BOLD),
@@ -237,7 +237,7 @@ impl SharingView {
 
         // GitHub link
         let github = Paragraph::new(Line::from(vec![Span::styled(
-            "✨ Star us on GitHub: https://github.com/unhappychoice/gittype",
+            "✨ Star us on GitHub: https://github.com/YuukiFST/devtype",
             Style::default().fg(colors.warning()),
         )]))
         .alignment(Alignment::Center);

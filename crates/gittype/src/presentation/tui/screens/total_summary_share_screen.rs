@@ -117,7 +117,7 @@ impl TotalSummaryShareScreen {
             SharingPlatform::Reddit => {
                 let total_result = self.total_result.read().unwrap();
                 let title = format!(
-                    "Just demolished {} keystrokes total in gittype! Score: {:.0}, CPM: {:.0}",
+                    "Just demolished {} keystrokes total in devtype! Score: {:.0}, CPM: {:.0}",
                     total_result.total_keystrokes,
                     total_result.total_score,
                     total_result.overall_cpm
@@ -137,7 +137,7 @@ impl TotalSummaryShareScreen {
             SharingPlatform::Facebook => {
                 format!(
                     "https://www.facebook.com/sharer/sharer.php?u={}&quote={}",
-                    urlencoding::encode("https://github.com/unhappychoice/gittype"),
+                    urlencoding::encode("https://github.com/YuukiFST/devtype"),
                     urlencoding::encode(text)
                 )
             }
