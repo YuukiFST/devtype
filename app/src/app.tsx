@@ -3,6 +3,10 @@ import { useMemo } from 'react'
 import { useSnapshot, type EngineStore } from './engine-store'
 import { TitleScreen } from './screens/title-screen'
 import { TypingScreen } from './screens/typing-screen'
+import { AnimationScreen } from './screens/animation-screen'
+import { LoadingScreen } from './screens/loading-screen'
+import { SessionFailureScreen } from './screens/session-failure-screen'
+import { StageSummaryScreen } from './screens/stage-summary-screen'
 import { resolvePalette, ThemeContext, usePalette } from './theme'
 import { KeyHint, StoreContext, Txt } from './ui/kit'
 import { ScreenFrame } from './ui/screen-frame'
@@ -29,6 +33,14 @@ function CurrentScreen({ snapshot }: { snapshot: Snapshot }) {
       return <TitleScreen view={viewOf(snapshot, 'Title')} />
     case 'Typing':
       return <TypingScreen view={viewOf(snapshot, 'Typing')} />
+    case 'Loading':
+      return <LoadingScreen view={viewOf(snapshot, 'Loading')} />
+    case 'StageSummary':
+      return <StageSummaryScreen view={viewOf(snapshot, 'StageSummary')} />
+    case 'SessionFailure':
+      return <SessionFailureScreen view={viewOf(snapshot, 'SessionFailure')} />
+    case 'Animation':
+      return <AnimationScreen view={viewOf(snapshot, 'Animation')} />
     default:
       return <UnportedScreen snapshot={snapshot} />
   }

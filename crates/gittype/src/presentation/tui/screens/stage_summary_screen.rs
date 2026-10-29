@@ -231,6 +231,111 @@ impl Screen for StageSummaryScreen {
         Ok(false)
     }
 
+    fn view_model(&self) -> serde_json::Value {
+        use crate::domain::models::ui::rank_colors;
+        use crate::domain::models::Rank;
+        use crate::presentation::ui::view_model::{color_json, line_json};
+        use crate::presentation::ui::{ansi256_to_rgb, GradationText};
+        use ratatui::style::{Modifier, Style};
+        use ratatui::text::{Line, Span};
+        use serde_json::json;
+
+        let stage_result = self.stage_result.read().unwrap();
+        let Some(ref result) = *stage_result else {
+            return serde_json::Value::Null;
+        };
+        let colors = self.theme_service.get_colors();
+        let is_completed = *self.is_completed.read().unwrap();
+        let session_current_stage = *self.session_current_stage.read().unwrap();
+        let total_stages = *self.total_stages.read().unwrap();
+        // Same stage number render_ratatui shows.
+        let completed_stage = if is_completed {
+            session_current_stage
+        } else {
+            session_current_stage.saturating_sub(1).max(1)
+        };
+
+        let outcome = if result.was_failed {
+            "failed"
+        } else if result.was_skipped {
+            "skipped"
+        } else {
+            "completed"
+        };
+        let title = match outcome {
+            "failed" => format!("=== STAGE {} FAILED ===", completed_stage),
+            "skipped" => format!("=== STAGE {} SKIPPED ===", completed_stage),
+            _ => format!("=== STAGE {} COMPLETE ===", completed_stage),
+        };
+        let score_label = match outcome {
+            "failed" => "FAILED AFTER",
+            "skipped" => "SKIPPED",
+            _ => "SCORE",
+        };
+        let score_value = match outcome {
+            "failed" => format!("{:.1}", result.completion_time.as_secs_f64()),
+            "skipped" => "---".to_string(),
+            _ => format!("{:.0}", result.challenge_score),
+        };
+
+        let rank = Rank::for_score(result.challenge_score);
+        let tier_colors = rank_colors::get_tier_colors(&rank.tier);
+        let ascii = StageCompletionView::create_ascii_numbers(&score_value);
+        let ascii_lines: Vec<serde_json::Value> = ascii
+            .iter()
+            .map(|line| match outcome {
+                "completed" => line_json(&GradationText::new(line, tier_colors).apply_gradation()),
+                _ => {
+                    let color = if result.was_failed {
+                        colors.error()
+                    } else {
+                        colors.warning()
+                    };
+                    line_json(&Line::from(Span::styled(
+                        line.clone(),
+                        Style::default().fg(color).add_modifier(Modifier::BOLD),
+                    )))
+                }
+            })
+            .collect();
+        let gradient: Vec<String> = tier_colors
+            .iter()
+            .map(|code| {
+                let rgb = ansi256_to_rgb(*code);
+                format!("#{:02x}{:02x}{:02x}", rgb.r, rgb.g, rgb.b)
+            })
+            .collect();
+        let outcome_color = match outcome {
+            "failed" => colors.error(),
+            "skipped" => colors.warning(),
+            _ => colors.success(),
+        };
+
+        json!({
+            "outcome": outcome,
+            "title": title,
+            "stageNumber": completed_stage,
+            "totalStages": total_stages,
+            "hasNextStage": !is_completed,
+            "progressText": format!("Stage {} of {}", completed_stage, total_stages),
+            "nextText": if is_completed { serde_json::Value::Null } else { json!("Next stage starting...") },
+            "scoreLabel": score_label,
+            "scoreValue": score_value,
+            "scoreAscii": ascii_lines,
+            "scoreGradient": gradient,
+            "outcomeColor": color_json(outcome_color),
+            "showMetrics": outcome == "completed",
+            "metrics": {
+                "cpm": format!("{:.0}", result.cpm),
+                "wpm": format!("{:.0}", result.wpm),
+                "time": format!("{:.1}s", result.completion_time.as_secs_f64()),
+                "keystrokes": result.keystrokes,
+                "mistakes": result.mistakes,
+                "accuracy": format!("{:.1}%", result.accuracy),
+            },
+        })
+    }
+
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }

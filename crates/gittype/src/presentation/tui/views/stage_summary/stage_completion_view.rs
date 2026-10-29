@@ -118,7 +118,7 @@ impl StageCompletionView {
         Self::render_options(colors, frame, chunks[chunk_idx]);
     }
 
-    fn create_ascii_numbers(score: &str) -> Vec<String> {
+    pub fn create_ascii_numbers(score: &str) -> Vec<String> {
         let digit_patterns = get_digit_patterns();
         let max_height = 4;
         let mut result = vec![String::new(); max_height];
