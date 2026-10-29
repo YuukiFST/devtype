@@ -182,6 +182,31 @@ impl Screen for SessionFailureScreen {
         Ok(false)
     }
 
+    fn view_model(&self) -> serde_json::Value {
+        use crate::presentation::ui::view_model::git_repository_json;
+
+        let session_result = self.session_result.read().unwrap();
+        let total_stages = *self.total_stages.read().unwrap();
+        let total_keystrokes = session_result.valid_keystrokes + session_result.invalid_keystrokes;
+        let total_mistakes = session_result.valid_mistakes + session_result.invalid_mistakes;
+        serde_json::json!({
+            "title": "=== SESSION FAILED ===",
+            "stagesCompleted": session_result.stages_completed,
+            "totalStages": total_stages,
+            "stagesText": format!("Stages: {}/{}", session_result.stages_completed, total_stages),
+            "metrics": {
+                "cpm": format!("{:.0}", session_result.overall_cpm),
+                "wpm": format!("{:.0}", session_result.overall_wpm),
+                "time": format!("{:.1}s", session_result.session_duration.as_secs_f64()),
+                "keystrokes": total_keystrokes,
+                "mistakes": total_mistakes,
+                "accuracy": format!("{:.1}%", session_result.overall_accuracy),
+            },
+            "message": "Challenge failed. Better luck next time!",
+            "repository": git_repository_json(self.repo_info.read().unwrap().as_ref()),
+        })
+    }
+
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
