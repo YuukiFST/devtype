@@ -7,3 +7,4 @@ gittype-dev.db
 dist/
 *.scratch.tsx
 shots/
+.claude/
