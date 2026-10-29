@@ -1,0 +1,88 @@
+[package]
+name = "gittype"
+publish = false
+version = "0.10.3"
+edition = "2021"
+authors = ["unhappychoice"]
+description = "A typing practice tool using your own code repositories"
+license = "MIT"
+repository = "https://github.com/unhappychoice/gittype"
+homepage = "https://github.com/unhappychoice/gittype"
+documentation = "https://docs.rs/gittype"
+keywords = ["typing", "practice", "cli", "git", "code"]
+categories = ["command-line-utilities", "games"]
+
+exclude = [
+    "*.png",
+    "*.gif",
+    "*.jpg",
+    "*.jpeg",
+    "docs/",
+    "examples/",
+    "tests/fixtures/",
+    ".github/",
+]
+
+
+[dependencies]
+clap = { version = "4.6", features = ["derive"] }
+tree-sitter = "0.25"
+tree-sitter-rust = "0.24"
+tree-sitter-typescript = "0.23"
+tree-sitter-javascript = "0.25"
+tree-sitter-python = "0.25"
+tree-sitter-ruby = "0.23"
+tree-sitter-go = "0.25"
+tree-sitter-swift = "0.7"
+tree-sitter-kotlin-ng = "1.0"
+tree-sitter-java = "0.23"
+tree-sitter-php = "0.25"
+tree-sitter-c-sharp = "0.23"
+tree-sitter-c = "0.24"
+tree-sitter-clojure = "0.1"
+tree-sitter-cpp = "0.23"
+tree-sitter-haskell = "0.24"
+tree-sitter-dart = "0.2.0"
+tree-sitter-elixir = "0.3"
+tree-sitter-erlang = "0.21"
+tree-sitter-scala = "0.26"
+tree-sitter-zig = "1.0"
+crossterm = "0.29"
+ratatui = "0.30"
+ansi-to-tui = "8.0.1"
+rusqlite = { version = "0.40", features = ["bundled"] }
+anyhow = "1.0"
+thiserror = "2.0"
+walkdir = "2.0"
+glob = "0.3"
+ignore = "0.4"
+chrono = { version = "0.4", features = ["serde"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+ctrlc = "3.5.2"
+dirs = "7.0"
+uuid = { version = "1.23", features = ["v4"] }
+rand = { version = "0.10", features = ["std_rng"] }
+once_cell = "1.21"
+rayon = "1.12"
+open = "5.3"
+urlencoding = "2.1"
+git2 = { version = "0.21", features = ["vendored-openssl", "vendored-libgit2"] }
+streaming-iterator = "0.1"
+log = "0.4"
+log4rs = "1.4"
+env_logger = "0.11"
+tempfile = "3.25"
+tokio = { version = "1.50", features = ["macros", "rt-multi-thread"] }
+reqwest = { version = "0.13", features = ["json"] }
+async-trait = "0.1"
+atty = "0.2"
+bincode = { version = "2.0", features = ["serde"] }
+flate2 = "1.1"
+sha2 = "0.11"
+shaku = "0.6"
+
+
+[features]
+default = []
+test-mocks = []

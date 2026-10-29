@@ -1,0 +1,7 @@
+target/
+node_modules/
+*.node
+.config/
+logs/
+gittype-dev.db
+dist/

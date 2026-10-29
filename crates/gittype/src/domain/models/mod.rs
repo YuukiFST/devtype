@@ -1,0 +1,37 @@
+pub mod challenge;
+pub mod chunk;
+pub mod color_mode;
+pub mod color_scheme;
+pub mod config;
+pub mod countdown;
+pub mod difficulty_level;
+pub mod extraction_options;
+pub mod git_repository;
+pub mod git_repository_ref;
+pub mod language;
+pub mod languages;
+pub mod loading;
+pub mod rank;
+pub mod session;
+pub mod stage;
+pub mod storage;
+pub mod theme;
+pub mod total;
+pub mod typing;
+pub mod ui;
+pub mod version;
+
+// Re-export main types for easy access
+pub use challenge::Challenge;
+pub use chunk::{ChunkType, CodeChunk};
+pub use countdown::Countdown;
+pub use difficulty_level::DifficultyLevel;
+pub use extraction_options::ExtractionOptions;
+pub use git_repository::GitRepository;
+pub use git_repository_ref::GitRepositoryRef;
+pub use language::{Language, Languages};
+pub use rank::{Rank, RankTier};
+pub use session::{Session, SessionAction, SessionConfig, SessionResult, SessionState};
+pub use stage::{GameMode, Stage, StageConfig, StageResult};
+pub use total::{Total, TotalResult};
+pub use typing::{CodeContext, InputResult, ProcessingOptions};

@@ -1,0 +1,25 @@
+use crate::domain::models::Language;
+use std::hash::Hash;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct Scala;
+
+impl Language for Scala {
+    fn name(&self) -> &'static str {
+        "scala"
+    }
+    fn extensions(&self) -> Vec<&'static str> {
+        vec!["sc", "scala"]
+    }
+    fn aliases(&self) -> Vec<&'static str> {
+        vec!["sc"]
+    }
+    fn display_name(&self) -> &'static str {
+        "Scala"
+    }
+
+    fn is_valid_comment_node(&self, node: tree_sitter::Node) -> bool {
+        let node_kind = node.kind();
+        node_kind == "comment" || node_kind == "block_comment"
+    }
+}

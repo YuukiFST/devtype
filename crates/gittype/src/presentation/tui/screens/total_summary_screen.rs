@@ -1,0 +1,241 @@
+use crate::domain::events::presentation_events::NavigateTo;
+use crate::domain::events::EventBusInterface;
+use crate::domain::models::TotalResult;
+use crate::domain::services::scoring::{TotalCalculator, TotalTracker, TotalTrackerInterface};
+use crate::domain::services::theme_service::ThemeServiceInterface;
+use crate::presentation::tui::views::{AsciiScoreView, SharingView, StatisticsView};
+use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
+use crate::{GitTypeError, Result};
+use crossterm::event::{self, KeyCode, KeyModifiers};
+use ratatui::{
+    layout::{Alignment, Constraint, Direction, Layout},
+    style::{Modifier, Style},
+    text::{Line, Span},
+    widgets::Paragraph,
+    Frame,
+};
+use std::sync::{Arc, Mutex, RwLock};
+
+pub struct TotalSummaryScreenData {
+    pub total_result: TotalResult,
+}
+
+pub struct TotalSummaryScreenDataProvider {
+    total_tracker: Arc<Mutex<Option<TotalTracker>>>,
+}
+
+impl TotalSummaryScreenDataProvider {
+    #[cfg(feature = "test-mocks")]
+    pub fn new_for_test(tracker: Option<TotalTracker>) -> Self {
+        Self {
+            total_tracker: Arc::new(Mutex::new(tracker)),
+        }
+    }
+}
+
+impl ScreenDataProvider for TotalSummaryScreenDataProvider {
+    fn provide(&self) -> Result<Box<dyn std::any::Any>> {
+        let total_result = self
+            .total_tracker
+            .lock()
+            .map_err(|e| {
+                GitTypeError::TerminalError(format!("Failed to lock total tracker: {}", e))
+            })?
+            .as_ref()
+            .map(|tracker| {
+                let mut result = TotalCalculator::calculate(tracker);
+                result.finalize();
+                result
+            })
+            .ok_or_else(|| GitTypeError::TerminalError("No total tracker available".to_string()))?;
+
+        Ok(Box::new(TotalSummaryScreenData { total_result }))
+    }
+}
+
+#[derive(Debug)]
+pub enum ExitAction {
+    Exit,
+    Share,
+}
+
+pub trait TotalSummaryScreenInterface: Screen {}
+
+#[derive(shaku::Component)]
+#[shaku(interface = TotalSummaryScreenInterface)]
+pub struct TotalSummaryScreen {
+    #[shaku(default)]
+    displayed: RwLock<bool>,
+    #[shaku(default)]
+    total_result: RwLock<Option<TotalResult>>,
+    #[shaku(inject)]
+    event_bus: Arc<dyn EventBusInterface>,
+    #[shaku(inject)]
+    theme_service: Arc<dyn ThemeServiceInterface>,
+    #[shaku(inject)]
+    total_tracker: Arc<dyn TotalTrackerInterface>,
+}
+
+impl TotalSummaryScreen {
+    pub fn new(
+        event_bus: Arc<dyn EventBusInterface>,
+        theme_service: Arc<dyn ThemeServiceInterface>,
+        total_tracker: Arc<dyn TotalTrackerInterface>,
+    ) -> Self {
+        Self {
+            displayed: RwLock::new(false),
+            total_result: RwLock::new(None),
+            event_bus,
+            theme_service,
+            total_tracker,
+        }
+    }
+}
+
+pub struct TotalSummaryScreenProvider;
+
+impl shaku::Provider<crate::presentation::di::AppModule> for TotalSummaryScreenProvider {
+    type Interface = TotalSummaryScreen;
+
+    fn provide(
+        module: &crate::presentation::di::AppModule,
+    ) -> std::result::Result<Box<Self::Interface>, Box<dyn std::error::Error>> {
+        use shaku::HasComponent;
+        let event_bus: std::sync::Arc<dyn EventBusInterface> = module.resolve();
+        let theme_service: Arc<dyn ThemeServiceInterface> = module.resolve();
+        let total_tracker: Arc<dyn TotalTrackerInterface> = module.resolve();
+        Ok(Box::new(TotalSummaryScreen::new(
+            event_bus,
+            theme_service,
+            total_tracker,
+        )))
+    }
+}
+
+impl Screen for TotalSummaryScreen {
+    fn get_type(&self) -> ScreenType {
+        ScreenType::TotalSummary
+    }
+
+    fn default_provider() -> Box<dyn crate::presentation::tui::ScreenDataProvider>
+    where
+        Self: Sized,
+    {
+        // This method is deprecated - use DI to get TotalTracker
+        Box::new(TotalSummaryScreenDataProvider {
+            total_tracker: Arc::new(Mutex::new(None)),
+        })
+    }
+
+    fn init_with_data(&self, data: Box<dyn std::any::Any>) -> Result<()> {
+        // Try to use external data first (for testing), otherwise get from injected total_tracker
+        let total_result = if let Ok(screen_data) = data.downcast::<TotalSummaryScreenData>() {
+            // Use external data (e.g., from tests with MockTotalSummaryDataProvider)
+            screen_data.total_result
+        } else {
+            // Get data from injected total_tracker (normal DI flow)
+            let total_data = self.total_tracker.get_data();
+            let mut result = TotalCalculator::calculate_from_data(&total_data);
+            result.finalize();
+            result
+        };
+
+        *self.total_result.write().unwrap() = Some(total_result);
+        *self.displayed.write().unwrap() = false; // Reset displayed flag to allow re-rendering
+        Ok(())
+    }
+
+    fn handle_key_event(&self, key_event: event::KeyEvent) -> Result<()> {
+        match key_event.code {
+            KeyCode::Char('s') | KeyCode::Char('S') => {
+                self.event_bus
+                    .as_event_bus()
+                    .publish(NavigateTo::Push(ScreenType::TotalSummaryShare));
+                Ok(())
+            }
+            KeyCode::Esc => {
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
+                Ok(())
+            }
+            KeyCode::Char('c') if key_event.modifiers.contains(KeyModifiers::CONTROL) => {
+                self.event_bus.as_event_bus().publish(NavigateTo::Exit);
+                Ok(())
+            }
+            _ => Ok(()),
+        }
+    }
+
+    fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
+        let colors = self.theme_service.get_colors();
+        let total_result = self.total_result.read().unwrap();
+        if let Some(ref total_result) = *total_result {
+            let area = frame.area();
+
+            // Calculate content heights
+            let title_height = 1;
+            let score_height = 4; // ASCII digits height
+            let stats_height = 4; // 4 lines of statistics
+            let options_height = 5; // Thanks, GitHub, spacing, Share, Exit
+            let spacing = 2; // Spacing between sections
+
+            let total_content_height = title_height
+                + spacing
+                + score_height
+                + spacing
+                + stats_height
+                + spacing
+                + options_height;
+
+            let top_spacing = (area.height.saturating_sub(total_content_height as u16)) / 2;
+
+            let chunks = Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([
+                    Constraint::Length(top_spacing),
+                    Constraint::Length(1), // Title
+                    Constraint::Length(2), // Spacing
+                    Constraint::Length(4), // Score
+                    Constraint::Length(2), // Spacing
+                    Constraint::Length(4), // Statistics
+                    Constraint::Length(2), // Spacing
+                    Constraint::Length(5), // Options
+                    Constraint::Min(0),
+                ])
+                .split(area);
+
+            // Title
+            let title = Paragraph::new(Line::from(vec![Span::styled(
+                "=== TOTAL SUMMARY ===",
+                Style::default()
+                    .fg(colors.info())
+                    .add_modifier(Modifier::BOLD),
+            )]))
+            .alignment(Alignment::Center);
+            frame.render_widget(title, chunks[1]);
+
+            // Score
+            AsciiScoreView::render(frame, chunks[3], total_result.total_score, &colors);
+
+            // Statistics
+            StatisticsView::render(frame, chunks[5], total_result, &colors);
+
+            // Options
+            SharingView::render_exit_options(frame, chunks[7], &colors);
+        }
+        Ok(())
+    }
+
+    fn get_update_strategy(&self) -> UpdateStrategy {
+        UpdateStrategy::InputOnly
+    }
+
+    fn update(&self) -> Result<bool> {
+        Ok(false)
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+}
+
+impl TotalSummaryScreenInterface for TotalSummaryScreen {}
