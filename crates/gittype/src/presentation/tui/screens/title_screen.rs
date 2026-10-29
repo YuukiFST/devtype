@@ -9,6 +9,7 @@ use crate::domain::stores::RepositoryStoreInterface;
 use crate::presentation::tui::views::title::{DifficultySelectionView, StaticElementsView};
 use crate::presentation::tui::ScreenDataProvider;
 use crate::presentation::tui::{Screen, ScreenType, UpdateStrategy};
+use crate::presentation::ui::view_model::git_repository_json;
 use crate::Result;
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::{
@@ -339,6 +340,29 @@ impl Screen for TitleScreen {
             *self.needs_render.write().unwrap() = false;
         }
         Ok(should_render)
+    }
+
+    fn view_model(&self) -> serde_json::Value {
+        let counts = *self.challenge_counts.read().unwrap();
+        let difficulties: Vec<serde_json::Value> = DIFFICULTIES
+            .iter()
+            .zip(counts.iter())
+            .map(|((name, level), count)| {
+                serde_json::json!({
+                    "name": name,
+                    "description": level.description(),
+                    "subtitle": level.subtitle(),
+                    "challengeCount": count,
+                })
+            })
+            .collect();
+        serde_json::json!({
+            "subtitle": "Code Typing Challenge",
+            "difficulties": difficulties,
+            "selectedDifficulty": *self.selected_difficulty.read().unwrap(),
+            "error": *self.error_message.read().unwrap(),
+            "repository": git_repository_json(self.git_repository.read().unwrap().as_ref()),
+        })
     }
 
     fn as_any(&self) -> &dyn std::any::Any {

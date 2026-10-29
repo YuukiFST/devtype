@@ -16,6 +16,8 @@ use crossterm::event::{KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use std::sync::{Arc, RwLock};
 use std::time::Duration;
 
+mod typing_view_model;
+
 pub trait TypingScreenInterface: Screen {}
 
 #[derive(shaku::Component)]
@@ -581,6 +583,10 @@ impl Screen for TypingScreen {
 
     fn cleanup(&self) -> Result<()> {
         Ok(())
+    }
+
+    fn view_model(&self) -> serde_json::Value {
+        self.build_view_model()
     }
 
     fn as_any(&self) -> &dyn std::any::Any {

@@ -102,3 +102,17 @@ pub fn palette_json(colors: &Colors) -> Value {
         "tierLegendary": color_json(Colors::tier_legendary()),
     })
 }
+
+pub fn git_repository_json(repo: Option<&crate::domain::models::GitRepository>) -> Value {
+    match repo {
+        Some(repo) => json!({
+            "user": repo.user_name,
+            "name": repo.repository_name,
+            "remoteUrl": repo.remote_url,
+            "branch": repo.branch,
+            "commit": repo.commit_hash.as_ref().map(|hash| hash.chars().take(8).collect::<String>()),
+            "dirty": repo.is_dirty,
+        }),
+        None => Value::Null,
+    }
+}
