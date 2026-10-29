@@ -43,6 +43,23 @@ fn validate_language(language: &str) -> bool {
     })
 }
 
+/// Prints the supported list and fails for a language GitHub trending lacks.
+pub fn validate_trending_language(console: &impl Console, lang: &str) -> Result<()> {
+    if validate_language(lang) {
+        return Ok(());
+    }
+    let supported_langs: Vec<&str> = SUPPORTED_LANGUAGES.iter().map(|(name, _)| *name).collect();
+    console.eprintln(&format!("❌ Unsupported language: '{}'", lang))?;
+    console.eprintln(&format!(
+        "📚 Supported languages: {}",
+        supported_langs.join(", ")
+    ))?;
+    Err(GitTypeError::ValidationError(format!(
+        "Unsupported language: {}",
+        lang
+    )))
+}
+
 pub fn run_trending(
     language: Option<String>,
     repo_name: Option<String>,
@@ -56,19 +73,7 @@ pub fn run_trending(
 
     // Validate language if provided
     if let Some(ref lang) = language {
-        if !validate_language(lang) {
-            let supported_langs: Vec<&str> =
-                SUPPORTED_LANGUAGES.iter().map(|(name, _)| *name).collect();
-            console.eprintln(&format!("❌ Unsupported language: '{}'", lang))?;
-            console.eprintln(&format!(
-                "📚 Supported languages: {}",
-                supported_langs.join(", ")
-            ))?;
-            return Err(GitTypeError::ValidationError(format!(
-                "Unsupported language: {}",
-                lang
-            )));
-        }
+        validate_trending_language(&console, lang)?;
     }
 
     if let Some(name) = repo_name {
