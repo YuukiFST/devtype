@@ -109,6 +109,78 @@ export type TypingView = {
   }
 }
 
+export type SessionSummaryView = {
+  title: string
+  rank: {
+    name: string
+    color: string | null
+    /** Rank title ASCII art, painted with the tier gradient. */
+    art: StyledLine[]
+    tierInfo: string
+    tier: string
+    tierPosition: number
+    tierTotal: number
+    overallPosition: number
+    overallTotal: number
+  }
+  score: {
+    value: string
+    art: StyledLine[]
+    /** `*** ALL TIME BEST ***`, `*** WEEKLY BEST ***` or `*** TODAY'S BEST ***`. */
+    bestLabel: string | null
+    diffText: string
+    diff: number
+  }
+  metrics: { cpm: string; wpm: string; time: string; keystrokes: number; mistakes: number; accuracy: string }
+}
+
+export type BestRecordRow =
+  | { label: string; hasRecord: false }
+  | {
+      label: string
+      hasRecord: true
+      newPb: boolean
+      score: string
+      cpm: string
+      accuracy: string
+      diffText: string | null
+      diff: number
+    }
+
+export type DetailsDialogView = {
+  title: string
+  stageResultsLabel: string
+  stages: { name: string; score: string; cpm: string; accuracy: string }[]
+  bestRecords: BestRecordRow[] | null
+}
+
+export type SharePlatformOption = { key: string; name: string }
+
+/** The share URL to copy by hand when no browser could be opened. */
+export type ShareFallback = { platform: string; title: string; instruction: string; url: string; escLabel: string }
+
+export type ShareMenuView = {
+  title: string
+  preview: StyledLine
+  platforms: SharePlatformOption[]
+  backLabel: string
+  fallback: ShareFallback | null
+}
+
+export type SessionSharingView = ShareMenuView
+export type TotalSummaryShareView = ShareMenuView
+
+export type TotalSummaryView = {
+  title: string
+  score: { value: string; art: string[] }
+  overall: { cpm: string; wpm: string; accuracy: string }
+  totals: { sessions: string; completed: string; stages: string; keystrokes: string; mistakes: string; skipped: string }
+  bestSession: { cpm: string; accuracy: string }
+  worstSession: { cpm: string; accuracy: string }
+  thanks: string
+  star: string
+}
+
 export type ScreenViews = {
   Title: TitleView
   Typing: TypingView
@@ -128,6 +200,11 @@ export type ScreenViews = {
   RepoPlay: RepoPlayView
   TrendingLanguageSelection: TrendingLanguageSelectionView
   TrendingRepositorySelection: TrendingRepositorySelectionView
+  SessionSummary: SessionSummaryView
+  DetailsDialog: DetailsDialogView
+  SessionSharing: SessionSharingView
+  TotalSummary: TotalSummaryView
+  TotalSummaryShare: TotalSummaryShareView
 }
 
 export type ScreenName =

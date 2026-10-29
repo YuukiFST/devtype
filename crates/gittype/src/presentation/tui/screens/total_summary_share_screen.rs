@@ -117,7 +117,7 @@ impl TotalSummaryShareScreen {
             SharingPlatform::Reddit => {
                 let total_result = self.total_result.read().unwrap();
                 let title = format!(
-                    "Just demolished {} keystrokes total in gittype! Score: {:.0}, CPM: {:.0}",
+                    "Just demolished {} keystrokes total in devtype! Score: {:.0}, CPM: {:.0}",
                     total_result.total_keystrokes,
                     total_result.total_score,
                     total_result.overall_cpm
@@ -137,7 +137,7 @@ impl TotalSummaryShareScreen {
             SharingPlatform::Facebook => {
                 format!(
                     "https://www.facebook.com/sharer/sharer.php?u={}&quote={}",
-                    urlencoding::encode("https://github.com/unhappychoice/gittype"),
+                    urlencoding::encode("https://github.com/YuukiFST/devtype"),
                     urlencoding::encode(text)
                 )
             }
@@ -248,7 +248,7 @@ impl Screen for TotalSummaryShareScreen {
         let colors = self.theme_service.get_colors();
         let fallback_url = self.fallback_url.read().unwrap();
         if let Some((url, platform)) = &*fallback_url {
-            SharingView::render_fallback_url(frame, url, platform, &colors);
+            SharingView::render_fallback_url(frame, url, platform, " Exit", &colors);
         } else {
             let total_result = self.total_result.read().unwrap();
             SharingView::render_menu(frame, &total_result, &colors);
@@ -262,6 +262,22 @@ impl Screen for TotalSummaryShareScreen {
 
     fn update(&self) -> Result<bool> {
         Ok(true)
+    }
+
+    fn view_model(&self) -> serde_json::Value {
+        use crate::presentation::ui::view_model::{
+            line_json, share_fallback_json, share_platforms_json,
+        };
+
+        let colors = self.theme_service.get_colors();
+        let total_result = self.total_result.read().unwrap();
+        serde_json::json!({
+            "title": "Share Your Total Results",
+            "preview": line_json(&SharingView::preview_line(&total_result, &colors)),
+            "platforms": share_platforms_json(),
+            "backLabel": "Back to Exit Screen",
+            "fallback": share_fallback_json(self.fallback_url.read().unwrap().as_ref(), "Exit"),
+        })
     }
 
     fn as_any(&self) -> &dyn std::any::Any {

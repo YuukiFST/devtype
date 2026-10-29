@@ -1,6 +1,6 @@
 //! Conversions from ratatui styling to JSON, used by `Screen::view_model`.
 
-use crate::presentation::ui::{ansi256_to_rgb, Colors};
+use crate::presentation::ui::{ansi256_to_rgb, Colors, GradationText};
 use ratatui::style::{Color, Modifier, Style};
 use ratatui::text::{Line, Span};
 use serde_json::{json, Value};
@@ -115,4 +115,45 @@ pub fn git_repository_json(repo: Option<&crate::domain::models::GitRepository>) 
         }),
         None => Value::Null,
     }
+}
+
+/// The numbered platform menu both share screens offer.
+pub fn share_platforms_json() -> Value {
+    Value::Array(
+        crate::presentation::sharing::SharingPlatform::all()
+            .iter()
+            .enumerate()
+            .map(|(i, platform)| json!({ "key": (i + 1).to_string(), "name": platform.name() }))
+            .collect(),
+    )
+}
+
+/// The URL a share screen shows when the browser could not be opened.
+pub fn share_fallback_json(
+    fallback: Option<&(String, crate::presentation::sharing::SharingPlatform)>,
+    esc_label: &str,
+) -> Value {
+    match fallback {
+        Some((url, platform)) => json!({
+            "platform": platform.name(),
+            "title": format!("Could not open {} automatically", platform.name()),
+            "instruction": "Please copy the URL below and open it in your browser:",
+            "url": url,
+            "escLabel": esc_label,
+        }),
+        None => Value::Null,
+    }
+}
+
+/// ASCII art lines colored left to right with ANSI-256 gradient stops, as
+/// `GradationText` paints them (rank titles, score digits).
+pub fn gradient_lines_json<S: AsRef<str>>(lines: &[S], ansi_colors: &[u8]) -> Value {
+    Value::Array(
+        lines
+            .iter()
+            .map(|line| {
+                line_json(&GradationText::new(line.as_ref(), ansi_colors).apply_gradation())
+            })
+            .collect(),
+    )
 }

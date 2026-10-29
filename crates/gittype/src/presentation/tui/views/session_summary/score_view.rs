@@ -33,15 +33,13 @@ impl ScoreView {
         result
     }
 
-    pub fn render(
-        frame: &mut Frame,
-        area: ratatui::layout::Rect,
+    /// The best-record label to celebrate (`"ALL TIME"`, `"WEEKLY"`,
+    /// `"TODAY'S"`) and the previous score the session is compared against.
+    pub fn best_type_and_comparison<'a>(
         session_result: &SessionResult,
-        best_rank: &Rank,
-        best_status: Option<&BestStatus>,
-        colors: &Colors,
-    ) -> usize {
-        let (updated_best_type, comparison_score) = if let Some(status) = best_status {
+        best_status: Option<&'a BestStatus>,
+    ) -> (Option<&'a str>, f64) {
+        if let Some(status) = best_status {
             // For comparison, always use the most relevant previous score
             let comparison_score = if status.best_type.as_deref() == Some("ALL TIME") {
                 status.all_time_best_score
@@ -97,20 +95,37 @@ impl ScoreView {
                 0.0
             };
             (updated_best_type, comparison_score)
-        };
+        }
+    }
+
+    /// `(+n)`, `(-n)` or `(±0)` against the comparison score.
+    pub fn diff_text(score_diff: f64) -> String {
+        if score_diff > 0.0 {
+            format!("(+{:.0})", score_diff)
+        } else if score_diff < 0.0 {
+            format!("({:.0})", score_diff)
+        } else {
+            "(±0)".to_string()
+        }
+    }
+
+    pub fn render(
+        frame: &mut Frame,
+        area: ratatui::layout::Rect,
+        session_result: &SessionResult,
+        best_rank: &Rank,
+        best_status: Option<&BestStatus>,
+        colors: &Colors,
+    ) -> usize {
+        let (updated_best_type, comparison_score) =
+            Self::best_type_and_comparison(session_result, best_status);
 
         let score_value = format!("{:.0}", session_result.session_score);
         let ascii_numbers = Self::create_ascii_numbers(&score_value);
         let ascii_height = ascii_numbers.len();
 
         let score_diff = session_result.session_score - comparison_score;
-        let diff_text = if score_diff > 0.0 {
-            format!("(+{:.0})", score_diff)
-        } else if score_diff < 0.0 {
-            format!("({:.0})", score_diff)
-        } else {
-            "(±0)".to_string()
-        };
+        let diff_text = Self::diff_text(score_diff);
 
         let diff_color = if score_diff > 0.0 {
             colors.success()

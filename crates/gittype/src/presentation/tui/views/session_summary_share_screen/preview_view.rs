@@ -18,12 +18,25 @@ impl PreviewView {
         repo_info: &Option<GitRepository>,
         colors: &Colors,
     ) {
+        let preview_widget = Paragraph::new(Self::preview_line(metrics, repo_info, colors))
+            .alignment(Alignment::Center);
+        frame.render_widget(preview_widget, area);
+    }
+
+    pub fn preview_line(
+        metrics: &SessionResult,
+        repo_info: &Option<GitRepository>,
+        colors: &Colors,
+    ) -> Line<'static> {
         let best_rank = Rank::for_score(metrics.session_score);
         let total_mistakes = metrics.valid_mistakes + metrics.invalid_mistakes;
 
         let mut spans = vec![
             Span::styled("\"", Style::default().fg(colors.text())),
-            Span::styled(best_rank.name(), Style::default().fg(best_rank.color())),
+            Span::styled(
+                best_rank.name().to_string(),
+                Style::default().fg(best_rank.color()),
+            ),
             Span::styled("\" with ", Style::default().fg(colors.text())),
             Span::styled(
                 format!("{:.0}pts", metrics.session_score),
@@ -55,8 +68,6 @@ impl PreviewView {
             ),
         ]);
 
-        let preview_line = Line::from(spans);
-        let preview_widget = Paragraph::new(preview_line).alignment(Alignment::Center);
-        frame.render_widget(preview_widget, area);
+        Line::from(spans)
     }
 }

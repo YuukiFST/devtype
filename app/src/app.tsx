@@ -17,6 +17,11 @@ import { StageSummaryScreen } from './screens/stage-summary-screen'
 import { RecordsScreen } from './screens/records-screen'
 import { SessionDetailScreen } from './screens/session-detail-screen'
 import { AnalyticsScreen } from './screens/analytics-screen'
+import { SessionSummaryScreen } from './screens/session-summary-screen'
+import { DetailsDialogScreen } from './screens/details-dialog-screen'
+import { SessionSharingScreen } from './screens/session-sharing-screen'
+import { TotalSummaryScreen } from './screens/total-summary-screen'
+import { TotalSummaryShareScreen } from './screens/total-summary-share-screen'
 import { resolvePalette, ThemeContext, usePalette } from './theme'
 import { KeyHint, StoreContext, Txt } from './ui/kit'
 import { ScreenFrame } from './ui/screen-frame'
@@ -71,6 +76,16 @@ function CurrentScreen({ snapshot }: { snapshot: Snapshot }) {
       return <TrendingLanguageSelectionScreen view={viewOf(snapshot, 'TrendingLanguageSelection')} />
     case 'TrendingRepositorySelection':
       return <TrendingRepositorySelectionScreen view={viewOf(snapshot, 'TrendingRepositorySelection')} />
+    case 'SessionSummary':
+      return <SessionSummaryScreen view={viewOf(snapshot, 'SessionSummary')} />
+    case 'DetailsDialog':
+      return <DetailsDialogScreen view={viewOf(snapshot, 'DetailsDialog')} />
+    case 'SessionSharing':
+      return <SessionSharingScreen view={viewOf(snapshot, 'SessionSharing')} />
+    case 'TotalSummary':
+      return <TotalSummaryScreen view={viewOf(snapshot, 'TotalSummary')} />
+    case 'TotalSummaryShare':
+      return <TotalSummaryShareScreen view={viewOf(snapshot, 'TotalSummaryShare')} />
     default:
       return <UnportedScreen snapshot={snapshot} />
   }

@@ -285,6 +285,76 @@ impl Screen for SessionSummaryScreen {
         Ok(false)
     }
 
+    fn view_model(&self) -> serde_json::Value {
+        use crate::domain::models::ui::{ascii_rank_titles, rank_colors};
+        use crate::domain::services::scoring::RankCalculator;
+        use crate::presentation::ui::view_model::{color_json, gradient_lines_json};
+        use serde_json::json;
+
+        let session_result = self.session_result.read().unwrap();
+        let Some(ref session_result) = *session_result else {
+            return serde_json::Value::Null;
+        };
+
+        let best_rank = Rank::for_score(session_result.session_score);
+        let best_status = self
+            .session_manager
+            .as_any()
+            .downcast_ref::<SessionManager>()
+            .and_then(|manager| {
+                manager
+                    .get_best_status_for_score(session_result.session_score)
+                    .ok()
+                    .flatten()
+            });
+        let tier_colors = rank_colors::get_tier_colors(&best_rank.tier);
+        let rank_patterns = ascii_rank_titles::get_all_rank_patterns();
+        let rank_art = rank_patterns
+            .get(best_rank.name())
+            .map(|lines| gradient_lines_json(lines, tier_colors))
+            .unwrap_or_else(|| json!([]));
+        let (tier, tier_position, tier_total, overall_position, overall_total) =
+            RankCalculator::calculate_tier_info(session_result.session_score);
+
+        let (best_type, comparison_score) =
+            ScoreView::best_type_and_comparison(session_result, best_status.as_ref());
+        let score_value = format!("{:.0}", session_result.session_score);
+        let score_diff = session_result.session_score - comparison_score;
+
+        json!({
+            "title": "=== SESSION COMPLETE ===",
+            "rank": {
+                "name": best_rank.name(),
+                "color": color_json(best_rank.color()),
+                "art": rank_art,
+                "tierInfo": format!(
+                    "{} tier - {}/{} (overall {}/{})",
+                    tier, tier_position, tier_total, overall_position, overall_total
+                ),
+                "tier": tier,
+                "tierPosition": tier_position,
+                "tierTotal": tier_total,
+                "overallPosition": overall_position,
+                "overallTotal": overall_total,
+            },
+            "score": {
+                "value": score_value,
+                "art": gradient_lines_json(&ScoreView::create_ascii_numbers(&score_value), tier_colors),
+                "bestLabel": best_type.map(|t| format!("*** {} BEST ***", t)),
+                "diffText": ScoreView::diff_text(score_diff),
+                "diff": score_diff.round(),
+            },
+            "metrics": {
+                "cpm": format!("{:.0}", session_result.overall_cpm),
+                "wpm": format!("{:.0}", session_result.overall_wpm),
+                "time": format!("{:.1}s", session_result.session_duration.as_secs_f64()),
+                "keystrokes": session_result.valid_keystrokes + session_result.invalid_keystrokes,
+                "mistakes": session_result.valid_mistakes + session_result.invalid_mistakes,
+                "accuracy": format!("{:.1}%", session_result.overall_accuracy),
+            },
+        })
+    }
+
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }

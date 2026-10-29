@@ -484,14 +484,11 @@ impl SessionManager {
 
     // Removed generate_total_result - not used
 
-    /// Record session to database and update total tracker
+    /// Record session to database. The total tracker already got the session
+    /// when `reduce` moved it to `Completed`.
     pub fn record_and_update_trackers(&self) -> Result<()> {
         if let Some(session_result) = self.generate_session_result() {
-            // Record session to database
             self.record_session_to_database(&session_result)?;
-
-            // Record session result in total tracker
-            self.total_tracker.record(session_result);
         }
         Ok(())
     }

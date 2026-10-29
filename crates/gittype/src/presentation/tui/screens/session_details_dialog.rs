@@ -267,6 +267,84 @@ impl Screen for SessionDetailsDialog {
         Ok(false)
     }
 
+    fn view_model(&self) -> serde_json::Value {
+        use serde_json::json;
+
+        let session_result = self.session_result.read().unwrap();
+        let Some(ref session_result) = *session_result else {
+            return serde_json::Value::Null;
+        };
+        let best_status = self.best_status.read().unwrap();
+        let best_records = self.best_records.read().unwrap();
+        let repo_info = self.repo_info.read().unwrap();
+
+        let stages: Vec<serde_json::Value> = session_result
+            .stage_results
+            .iter()
+            .enumerate()
+            .map(|(i, stage)| {
+                json!({
+                    "name": StageResultsView::get_stage_name(stage, i),
+                    "score": format!("{:.0}", stage.challenge_score),
+                    "cpm": format!("{:.0}", stage.cpm),
+                    "accuracy": format!("{:.1}%", stage.accuracy),
+                })
+            })
+            .collect();
+
+        // Same rows and NEW PB rule as BestRecordsView.
+        let best_rows = best_records.as_ref().map(|records| {
+            [
+                ("Today's Best", &records.todays_best),
+                ("Weekly Best", &records.weekly_best),
+                ("All time Best", &records.all_time_best),
+            ]
+            .iter()
+            .map(|(label, record)| {
+                let Some(record) = record else {
+                    return json!({ "label": label, "hasRecord": false });
+                };
+                let is_new_pb = match best_status.as_ref() {
+                    Some(status) => match *label {
+                        "Today's Best" => status.is_todays_best,
+                        "Weekly Best" => status.is_weekly_best,
+                        _ => status.is_all_time_best,
+                    },
+                    None => session_result.session_score > record.score,
+                };
+                let diff = session_result.session_score - record.score;
+                let diff_text = if diff > 0.0 {
+                    Some(format!("(+{:.0})", diff))
+                } else if diff < 0.0 {
+                    Some(format!("({:.0})", diff))
+                } else {
+                    None
+                };
+                json!({
+                    "label": label,
+                    "hasRecord": true,
+                    "newPb": is_new_pb,
+                    "score": format!("{:.0}", record.score),
+                    "cpm": format!("{:.0}", record.cpm),
+                    "accuracy": format!("{:.1}%", record.accuracy),
+                    "diffText": diff_text,
+                    "diff": diff.round(),
+                })
+            })
+            .collect::<Vec<_>>()
+        });
+
+        json!({
+            "title": "=== SESSION DETAILS ===",
+            "stageResultsLabel": match repo_info.as_ref() {
+                Some(repo) => format!("Stage Results: [{}/{}]", repo.user_name, repo.repository_name),
+                None => "Stage Results:".to_string(),
+            },
+            "stages": stages,
+            "bestRecords": best_rows,
+        })
+    }
+
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
