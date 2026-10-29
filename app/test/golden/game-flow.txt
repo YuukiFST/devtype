@@ -1,0 +1,13 @@
+title.repository: fixture/sample @ main
+title.difficulty: Easy challenges=14
+title.difficulty: Normal challenges=6
+title.difficulty: Hard challenges=2
+title.difficulty: Wild challenges=14
+title.difficulty: Zen challenges=2
+title.selected: Easy
+typing.state: waiting
+typing.skips: 3
+stage 1: completed
+stage 2: completed
+stage 3: completed
+after stage 3: Animation
