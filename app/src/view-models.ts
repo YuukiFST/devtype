@@ -7,6 +7,9 @@ import type { AnimationView } from './screens/animation-screen'
 import type { LoadingView } from './screens/loading-screen'
 import type { SessionFailureView } from './screens/session-failure-screen'
 import type { StageSummaryView } from './screens/stage-summary-screen'
+import type { HelpView } from './screens/help-screen'
+import type { InfoDialogView } from './screens/info-dialog-screen'
+import type { SettingsView } from './screens/settings-screen'
 
 export const PALETTE_ROLES = [
   'border',
@@ -108,6 +111,9 @@ export type ScreenViews = {
   SessionFailure: SessionFailureView
   /** `null` until the session result is injected. */
   Animation: AnimationView | null
+  Settings: SettingsView
+  Help: HelpView
+  InfoDialog: InfoDialogView
 }
 
 export type ScreenName =

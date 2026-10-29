@@ -51,6 +51,8 @@ pub struct SettingsScreenData {
     pub current_color_mode: ColorMode,
 }
 
+mod settings_view_model;
+
 pub trait SettingsScreenInterface: Screen {}
 
 #[derive(shaku::Component)]
@@ -510,6 +512,10 @@ impl Screen for SettingsScreen {
         self.render_footer(f, chunks[2], &colors);
 
         Ok(())
+    }
+
+    fn view_model(&self) -> serde_json::Value {
+        self.build_view_model()
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
