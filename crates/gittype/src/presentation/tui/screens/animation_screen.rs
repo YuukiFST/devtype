@@ -295,6 +295,60 @@ impl Screen for AnimationScreen {
         Ok(false)
     }
 
+    fn view_model(&self) -> serde_json::Value {
+        use crate::presentation::ui::view_model::color_json;
+        use serde_json::json;
+
+        let animation_guard = self.animation.read().unwrap();
+        let session_result_guard = self.session_result.read().unwrap();
+        let (Some(animation), Some(session_result)) =
+            (animation_guard.as_ref(), session_result_guard.as_ref())
+        else {
+            return serde_json::Value::Null;
+        };
+        let rank = Rank::for_score(session_result.session_score);
+        let phase = match animation.get_current_phase() {
+            AnimationPhase::ConcentrationLines => "lines",
+            AnimationPhase::Pause => "pause",
+            AnimationPhase::Complete => "complete",
+        };
+        let current_line = animation.get_current_line();
+        // During Pause and Complete render_typing_animation_ratatui shows full lines.
+        let reveal_all = phase != "lines";
+        let lines: Vec<serde_json::Value> = animation
+            .get_hacking_lines()
+            .iter()
+            .enumerate()
+            .map(|(i, line)| {
+                let visible = if reveal_all {
+                    line.text.as_str()
+                } else {
+                    &line.text[..line.typed_length]
+                };
+                json!({
+                    "text": line.text,
+                    "visibleText": visible,
+                    "color": color_json(line.color),
+                    "completed": line.completed,
+                    "showCursor": !reveal_all
+                        && i == current_line
+                        && line.typed_length < line.text.len()
+                        && !line.completed,
+                })
+            })
+            .collect();
+
+        json!({
+            "phase": phase,
+            "rankName": rank.name(),
+            "tier": format!("{:?}", rank.tier()),
+            "currentLine": current_line,
+            "lines": lines,
+            "pauseDots": animation.get_pause_dots(),
+            "skipHint": "[S] Skip",
+        })
+    }
+
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
