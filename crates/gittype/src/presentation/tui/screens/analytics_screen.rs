@@ -66,6 +66,8 @@ pub enum AnalyticsAction {
     Return,
 }
 
+mod analytics_view_model;
+
 pub trait AnalyticsScreenInterface: Screen {}
 
 #[derive(shaku::Component)]
@@ -450,6 +452,10 @@ impl Screen for AnalyticsScreen {
 
     fn update(&self) -> Result<bool> {
         Ok(false)
+    }
+
+    fn view_model(&self) -> serde_json::Value {
+        self.build_view_model()
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
