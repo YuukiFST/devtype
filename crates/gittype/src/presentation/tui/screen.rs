@@ -127,6 +127,12 @@ pub trait Screen: Send + Sync + shaku::Interface {
         false
     }
 
+    /// Structured snapshot of what the screen shows, for hosts that draw
+    /// the UI themselves instead of through `render_ratatui`.
+    fn view_model(&self) -> serde_json::Value {
+        serde_json::Value::Null
+    }
+
     /// Downcast to Any for type-specific access (read-only)
     fn as_any(&self) -> &dyn std::any::Any;
 }

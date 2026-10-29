@@ -33,7 +33,7 @@ use crossterm::style::ResetColor;
 use crossterm::terminal::{
     disable_raw_mode, enable_raw_mode, Clear, ClearType, EnterAlternateScreen, LeaveAlternateScreen,
 };
-use ratatui::backend::CrosstermBackend;
+use ratatui::backend::{CrosstermBackend, TestBackend};
 use ratatui::Terminal;
 use shaku::{Component, Interface};
 
@@ -126,6 +126,10 @@ impl<T: Screen + Send + Sync + ?Sized> Screen for ArcScreenWrapper<T> {
         self.0.is_exitable()
     }
 
+    fn view_model(&self) -> serde_json::Value {
+        self.0.view_model()
+    }
+
     fn as_any(&self) -> &dyn std::any::Any {
         self.0.as_any()
     }
@@ -137,6 +141,10 @@ pub trait ScreenManagerFactory: Interface {
         &self,
         module: &crate::presentation::di::AppModule,
     ) -> ScreenManagerImpl<CrosstermBackend<Stdout>>;
+
+    /// Builds a manager that renders into an in-memory buffer, for hosts
+    /// that draw the UI themselves and never touch the terminal.
+    fn create_headless(&self, width: u16, height: u16) -> ScreenManagerImpl<TestBackend>;
 }
 
 /// Central manager for screen transitions, rendering, and input handling
@@ -345,22 +353,21 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
             )));
         }
 
-        // Flush before cleaning up the current screen
-        stdout().flush().map_err(|e| {
-            GitTypeError::TerminalError(format!("Failed to flush before screen transition: {}", e))
-        })?;
-
         if let Some(current_screen) = self.screens.get_mut(&self.current_screen_type) {
             current_screen.cleanup()?;
         }
 
-        // Clear screen after cleanup and flush again
-        execute!(stdout(), Clear(ClearType::All)).map_err(|e| {
-            GitTypeError::TerminalError(format!("Failed to clear screen during transition: {}", e))
-        })?;
-        stdout().flush().map_err(|e| {
-            GitTypeError::TerminalError(format!("Failed to flush after screen clear: {}", e))
-        })?;
+        if self.terminal_initialized {
+            execute!(stdout(), Clear(ClearType::All)).map_err(|e| {
+                GitTypeError::TerminalError(format!(
+                    "Failed to clear screen during transition: {}",
+                    e
+                ))
+            })?;
+            stdout().flush().map_err(|e| {
+                GitTypeError::TerminalError(format!("Failed to flush after screen clear: {}", e))
+            })?;
+        }
 
         self.current_screen_type = screen_type;
 
@@ -381,11 +388,6 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
                 ))
             })?;
         }
-
-        // Flush after initializing new screen
-        stdout().flush().map_err(|e| {
-            GitTypeError::TerminalError(format!("Failed to flush after screen init: {}", e))
-        })?;
 
         Ok(())
     }
@@ -542,6 +544,45 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
         Ok(())
     }
 
+    /// Runs one iteration of the main loop without polling the terminal:
+    /// timed screen updates, auto-transitions, then the pending transition.
+    /// Hosts that own the event loop (the GUI) call this on every frame.
+    pub fn advance(&mut self) -> Result<()> {
+        self.update_and_render()?;
+        self.apply_pending_transition();
+        Ok(())
+    }
+
+    /// Delivers one key press exactly as the terminal loop would, then
+    /// applies any transition the screen requested.
+    pub fn dispatch_key(&mut self, key_event: crossterm::event::KeyEvent) -> Result<()> {
+        self.handle_key_input(key_event)?;
+        self.apply_pending_transition();
+        Ok(())
+    }
+
+    pub fn is_exit_requested(&self) -> bool {
+        self.exit_requested
+    }
+
+    fn apply_pending_transition(&mut self) {
+        let pending_transition = self
+            .pending_transition
+            .lock()
+            .ok()
+            .and_then(|mut pending| pending.take());
+
+        if let Some(transition) = pending_transition {
+            log::info!(
+                "ScreenManager: Processing pending transition: {:?}",
+                transition
+            );
+            if let Err(e) = self.handle_transition(transition) {
+                log::error!("ScreenManager: Failed to handle transition: {}", e);
+            }
+        }
+    }
+
     fn run_loop(&mut self) -> Result<()> {
         // Initialize current screen and force initial render
         self.render_current_screen()?;
@@ -553,23 +594,7 @@ impl<B: ratatui::backend::Backend + Send + 'static> ScreenManagerImpl<B> {
             // Handle input
             self.handle_input()?;
 
-            // Check for pending screen transitions
-            let pending_transition = {
-                self.pending_transition
-                    .lock()
-                    .ok()
-                    .and_then(|mut pending| pending.take())
-            };
-
-            if let Some(transition) = pending_transition {
-                log::info!(
-                    "ScreenManager: Processing pending transition: {:?}",
-                    transition
-                );
-                if let Err(e) = self.handle_transition(transition) {
-                    log::error!("ScreenManager: Failed to handle transition: {}", e);
-                }
-            }
+            self.apply_pending_transition();
 
             // Check if exit was requested
             if self.exit_requested {
@@ -892,12 +917,26 @@ impl ScreenManagerFactory for ScreenManagerFactoryImpl {
         &self,
         _module: &crate::presentation::di::AppModule,
     ) -> ScreenManagerImpl<CrosstermBackend<Stdout>> {
+        self.build(self.terminal.get())
+    }
+
+    fn create_headless(&self, width: u16, height: u16) -> ScreenManagerImpl<TestBackend> {
+        let terminal = Terminal::new(TestBackend::new(width, height))
+            .expect("TestBackend terminal creation is infallible");
+        self.build(terminal)
+    }
+}
+
+impl ScreenManagerFactoryImpl {
+    fn build<B: ratatui::backend::Backend + Send + 'static>(
+        &self,
+        terminal: Terminal<B>,
+    ) -> ScreenManagerImpl<B> {
         // Use the Arc<dyn EventBusInterface> directly from DI - ensures same instance everywhere
         let event_bus = self.event_bus.clone();
         let session_store = self.session_store.clone();
         let session_manager = self.session_manager.clone();
         let stage_repository = self.stage_repository.clone();
-        let terminal = self.terminal.get();
         let mut manager = ScreenManagerImpl::new(
             event_bus.clone(),
             session_store,

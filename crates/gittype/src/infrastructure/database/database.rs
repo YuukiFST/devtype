@@ -79,6 +79,10 @@ impl Database {
         if cfg!(test) {
             // Test: use in-memory database (shouldn't be called in tests)
             Ok(PathBuf::from(":memory:"))
+        } else if std::env::var_os(crate::infrastructure::storage::app_data_provider::HOME_OVERRIDE_ENV)
+            .is_some()
+        {
+            Ok(crate::infrastructure::storage::app_data_provider::app_home_dir()?.join("devtype.db"))
         } else if cfg!(debug_assertions) {
             // Development: use project directory
             let current_dir = std::env::current_dir().map_err(|e| {
@@ -87,10 +91,7 @@ impl Database {
             Ok(current_dir.join("gittype-dev.db"))
         } else {
             // Release: use home directory
-            let home_dir = dirs::home_dir().ok_or_else(|| {
-                GitTypeError::ExtractionFailed("Could not determine home directory".to_string())
-            })?;
-            Ok(home_dir.join(".gittype").join("gittype.db"))
+            Ok(crate::infrastructure::storage::app_data_provider::app_home_dir()?.join("devtype.db"))
         }
     }
 

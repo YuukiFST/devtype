@@ -69,6 +69,10 @@ pub fn get_log_directory() -> Result<PathBuf> {
         // Keep the temp dir alive for the test duration
         std::mem::forget(temp_dir);
         Ok(path)
+    } else if std::env::var_os(crate::infrastructure::storage::app_data_provider::HOME_OVERRIDE_ENV)
+        .is_some()
+    {
+        Ok(crate::infrastructure::storage::app_data_provider::app_home_dir()?.join("logs"))
     } else if cfg!(debug_assertions) {
         // Development: use project directory
         let current_dir = std::env::current_dir().map_err(|e| {
@@ -77,10 +81,7 @@ pub fn get_log_directory() -> Result<PathBuf> {
         Ok(current_dir.join("logs"))
     } else {
         // Release: use home directory
-        let home_dir = dirs::home_dir().ok_or_else(|| {
-            GitTypeError::ExtractionFailed("Could not determine home directory".to_string())
-        })?;
-        Ok(home_dir.join(".gittype").join("logs"))
+        Ok(crate::infrastructure::storage::app_data_provider::app_home_dir()?.join("logs"))
     }
 }
 
