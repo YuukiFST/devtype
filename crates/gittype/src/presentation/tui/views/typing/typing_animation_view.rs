@@ -80,8 +80,12 @@ impl TypingAnimationView {
                             let chars_to_type = ((line_elapsed.as_millis() / 40) as usize + 1)
                                 .saturating_sub(line.typed_length);
                             if chars_to_type > 0 {
-                                line.typed_length =
-                                    (line.typed_length + chars_to_type.min(1)).min(line.text.len());
+                                // typed_length is a byte offset; land on a char boundary
+                                let mut next = (line.typed_length + 1).min(line.text.len());
+                                while !line.text.is_char_boundary(next) {
+                                    next += 1;
+                                }
+                                line.typed_length = next;
                             }
                         }
                     } else if !line.completed {
