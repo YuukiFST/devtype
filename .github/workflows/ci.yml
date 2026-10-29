@@ -5,6 +5,11 @@ on:
     branches: [main]
   pull_request:
 
+# A newer push makes the running build moot; each one is a long Rust compile.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   test:
     runs-on: windows-latest
