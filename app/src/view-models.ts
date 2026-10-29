@@ -3,6 +3,10 @@
  * (crates/gittype/src/presentation/tui/screens). Rust is the source of truth.
  */
 
+import type { HelpView } from './screens/help-screen'
+import type { InfoDialogView } from './screens/info-dialog-screen'
+import type { SettingsView } from './screens/settings-screen'
+
 export const PALETTE_ROLES = [
   'border',
   'title',
@@ -97,6 +101,9 @@ export type TypingView = {
 export type ScreenViews = {
   Title: TitleView
   Typing: TypingView
+  Settings: SettingsView
+  Help: HelpView
+  InfoDialog: InfoDialogView
 }
 
 export type ScreenName =

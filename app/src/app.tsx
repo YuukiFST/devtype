@@ -1,6 +1,9 @@
 import { useMemo } from 'react'
 
 import { useSnapshot, type EngineStore } from './engine-store'
+import { HelpScreen } from './screens/help-screen'
+import { InfoDialogScreen } from './screens/info-dialog-screen'
+import { SettingsScreen } from './screens/settings-screen'
 import { TitleScreen } from './screens/title-screen'
 import { TypingScreen } from './screens/typing-screen'
 import { resolvePalette, ThemeContext, usePalette } from './theme'
@@ -29,6 +32,12 @@ function CurrentScreen({ snapshot }: { snapshot: Snapshot }) {
       return <TitleScreen view={viewOf(snapshot, 'Title')} />
     case 'Typing':
       return <TypingScreen view={viewOf(snapshot, 'Typing')} />
+    case 'Settings':
+      return <SettingsScreen view={viewOf(snapshot, 'Settings')} />
+    case 'Help':
+      return <HelpScreen view={viewOf(snapshot, 'Help')} />
+    case 'InfoDialog':
+      return <InfoDialogScreen view={viewOf(snapshot, 'InfoDialog')} />
     default:
       return <UnportedScreen snapshot={snapshot} />
   }
