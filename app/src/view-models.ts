@@ -97,6 +97,9 @@ export type TypingView = {
 export type ScreenViews = {
   Title: TitleView
   Typing: TypingView
+  Records: import('./screens/records-screen').RecordsView
+  SessionDetail: import('./screens/session-detail-screen').SessionDetailView
+  Analytics: import('./screens/analytics-screen').AnalyticsView
 }
 
 export type ScreenName =
