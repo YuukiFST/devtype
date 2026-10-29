@@ -8,7 +8,7 @@ import { createTestRoot } from '@gpuix/react/testing'
 import { App } from '../src/app'
 import { createEngineStore, keyInputFor, type EngineStore } from '../src/engine-store'
 import type { GameOptions } from '../src/native'
-import type { Snapshot } from '../src/view-models'
+import { viewOf, type Snapshot, type TypingView } from '../src/view-models'
 
 const FIXTURE_FILES: Record<string, string> = {
   'src/lib.rs': `/// Adds two numbers.
@@ -56,6 +56,27 @@ class Stack:
 
 const FIXTURE_PREFIX = 'devtype-e2e-'
 
+/** gittype's display text marks each line end with this glyph. */
+const LINE_END_MARKER = '↵'
+
+/**
+ * The text TypingCore expects: comments dropped, each line trimmed, blank
+ * lines skipped, lines joined by Enter (TypingCore::create_typing_text).
+ */
+export function textToType(code: TypingView['code']): string {
+  return code.lines
+    .map((runs) =>
+      runs
+        .filter((run) => run.kind !== 'comment')
+        .map((run) => run.text)
+        .join('')
+        .replaceAll(LINE_END_MARKER, '')
+        .trim(),
+    )
+    .filter((line) => line.length > 0)
+    .join('\n')
+}
+
 /**
  * The engine keeps the SQLite database and log file open until the process
  * exits, and Windows refuses to delete open files, so each run removes the
@@ -99,7 +120,13 @@ export type Harness = {
   store: EngineStore
   snapshot: () => Snapshot
   press: (key: string) => Promise<void>
-  type: (text: string) => Promise<void>
+  /** Types `text`; `\n` is Enter. `delayMs` spaces the presses so timing metrics are non-zero. */
+  type: (text: string, delayMs?: number) => Promise<void>
+  /**
+   * From a Typing screen waiting for SPACE: starts the countdown, waits for it,
+   * then types the whole challenge without mistakes.
+   */
+  playStage: (delayMs?: number) => Promise<void>
   waitForScreen: (screen: Snapshot['screen'], timeoutMs?: number) => Promise<Snapshot>
   screenshot: (path: string) => Promise<void>
   dispose: () => void
@@ -120,6 +147,17 @@ export async function startHarness(options: GameOptions, home: string): Promise<
     await renderer.flush()
   }
 
+  const typeText = async (text: string, delayMs = 0) => {
+    for (const ch of text) {
+      if (ch === '\n') store.press('enter')
+      else if (ch === '\t') store.press('tab')
+      else if (ch === ' ') store.press('space')
+      else store.pressKey(keyInputFor(ch, { shift: ch !== ch.toLowerCase() }))
+      if (delayMs > 0) await new Promise((resolve) => setTimeout(resolve, delayMs))
+    }
+    await settle()
+  }
+
   return {
     store,
     snapshot: () => store.getSnapshot(),
@@ -127,14 +165,15 @@ export async function startHarness(options: GameOptions, home: string): Promise<
       store.press(key)
       await settle()
     },
-    type: async (text) => {
-      for (const ch of text) {
-        if (ch === '\n') store.press('enter')
-        else if (ch === '\t') store.press('tab')
-        else if (ch === ' ') store.press('space')
-        else store.pressKey(keyInputFor(ch, { shift: ch !== ch.toLowerCase() }))
+    type: (text, delayMs) => typeText(text, delayMs),
+    playStage: async (delayMs = 4) => {
+      store.press('space')
+      const deadline = Date.now() + 10_000
+      while (viewOf(store.getSnapshot(), 'Typing').state !== 'typing') {
+        if (Date.now() > deadline) throw new Error('countdown never finished')
+        await new Promise((resolve) => setTimeout(resolve, 25))
       }
-      await settle()
+      await typeText(textToType(viewOf(store.getSnapshot(), 'Typing').code), delayMs)
     },
     waitForScreen: async (screen, timeoutMs = 60_000) => {
       const deadline = Date.now() + timeoutMs

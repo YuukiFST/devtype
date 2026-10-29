@@ -124,11 +124,6 @@ impl Step for CacheCheckStep {
             challenge_count
         );
 
-        // Mark loading as completed
-        if let Some(session_store) = &context.session_store {
-            session_store.set_loading_completed(true);
-        }
-
         Ok(StepResult::Skipped)
     }
 }

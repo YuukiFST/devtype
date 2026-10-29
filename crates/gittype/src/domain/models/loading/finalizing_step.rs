@@ -120,6 +120,12 @@ impl Step for FinalizingStep {
 
         // Tracker instances are now managed via DI - no need to initialize global instances
 
+        // Only now is the session ready: marking completion any earlier lets the
+        // Title screen start a session that the reset above then discards.
+        if let Some(session_store) = &context.session_store {
+            session_store.set_loading_completed(true);
+        }
+
         Ok(StepResult::Skipped)
     }
 }

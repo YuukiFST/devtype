@@ -98,11 +98,6 @@ impl Step for GeneratingStep {
             repository_store.set_repository(git_repo.clone());
         }
 
-        // Mark loading as completed
-        if let Some(session_store) = &context.session_store {
-            session_store.set_loading_completed(true);
-        }
-
         Ok(StepResult::Skipped)
     }
 }
