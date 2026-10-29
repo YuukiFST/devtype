@@ -1,0 +1,7 @@
+{
+  "name": "devtype-native",
+  "private": true,
+  "napi": {
+    "binaryName": "devtype-native"
+  }
+}

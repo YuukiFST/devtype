@@ -5,3 +5,5 @@ node_modules/
 logs/
 gittype-dev.db
 dist/
+*.scratch.tsx
+shots/

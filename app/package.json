@@ -1,0 +1,24 @@
+{
+  "name": "devtype",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@gpuix/native": "0.11.0",
+    "@gpuix/react": "0.11.0",
+    "react": "19.2.4"
+  },
+  "devDependencies": {
+    "@napi-rs/cli": "3.10.9",
+    "@types/bun": "^1.4.4",
+    "@types/react": "^19.3.0",
+    "typescript": "^7.0.2"
+  },
+  "scripts": {
+    "build:native": "napi build --manifest-path ../crates/devtype-native/Cargo.toml --package-json-path ../crates/devtype-native/package.json --output-dir native --no-js --dts index.d.ts",
+    "build:native:release": "napi build --release --manifest-path ../crates/devtype-native/Cargo.toml --package-json-path ../crates/devtype-native/package.json --output-dir native --no-js --dts index.d.ts",
+    "dev": "bun --hot src/main.tsx",
+    "start": "bun src/main.tsx",
+    "typecheck": "tsc -p .",
+    "test": "bun test"
+  }
+}
