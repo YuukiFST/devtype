@@ -59,6 +59,8 @@ impl HelpSection {
     }
 }
 
+mod help_view_model;
+
 pub trait HelpScreenInterface: Screen {}
 
 #[derive(shaku::Component)]
@@ -1237,6 +1239,10 @@ impl Screen for HelpScreen {
 
     fn update(&self) -> crate::Result<bool> {
         Ok(false)
+    }
+
+    fn view_model(&self) -> serde_json::Value {
+        self.build_view_model()
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
