@@ -33,7 +33,6 @@ pub struct StageRepository {
     #[shaku(inject)]
     challenge_store: Arc<dyn ChallengeStoreInterface>,
     #[shaku(inject)]
-    #[allow(dead_code)]
     repository_store: Arc<dyn RepositoryStoreInterface>,
     #[shaku(inject)]
     #[allow(dead_code)]
@@ -261,7 +260,13 @@ impl StageRepository {
         if let Some(screen) = manager.get_screen_mut(&ScreenType::Title) {
             if let Some(title_screen) = screen.as_any().downcast_ref::<TitleScreen>() {
                 title_screen.set_challenge_counts(challenge_counts);
-                title_screen.set_git_repository(self.git_repository.lock().unwrap().clone());
+                // The loading steps publish the repository through RepositoryStore;
+                // `self.git_repository` is only set by tests that construct it directly.
+                let git_repository = self
+                    .repository_store
+                    .get_repository()
+                    .or_else(|| self.git_repository.lock().unwrap().clone());
+                title_screen.set_git_repository(git_repository);
             }
         }
         Ok(())
