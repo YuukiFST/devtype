@@ -136,7 +136,7 @@ impl AnalyticsScreen {
             let mut list_state = self.repository_list_state.write().unwrap();
             let i = match list_state.selected() {
                 Some(i) => {
-                    if i >= data.top_repositories.len() - 1 {
+                    if i + 1 >= data.top_repositories.len() {
                         0
                     } else {
                         i + 1
@@ -157,7 +157,7 @@ impl AnalyticsScreen {
             let i = match list_state.selected() {
                 Some(i) => {
                     if i == 0 {
-                        data.top_repositories.len() - 1
+                        data.top_repositories.len().saturating_sub(1)
                     } else {
                         i - 1
                     }
@@ -176,7 +176,7 @@ impl AnalyticsScreen {
             let mut list_state = self.language_list_state.write().unwrap();
             let i = match list_state.selected() {
                 Some(i) => {
-                    if i >= data.top_languages.len() - 1 {
+                    if i + 1 >= data.top_languages.len() {
                         0
                     } else {
                         i + 1
@@ -197,7 +197,7 @@ impl AnalyticsScreen {
             let i = match list_state.selected() {
                 Some(i) => {
                     if i == 0 {
-                        data.top_languages.len() - 1
+                        data.top_languages.len().saturating_sub(1)
                     } else {
                         i - 1
                     }
