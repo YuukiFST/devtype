@@ -242,6 +242,87 @@ impl Screen for SessionDetailScreen {
         Ok(false)
     }
 
+    fn view_model(&self) -> serde_json::Value {
+        use chrono::{DateTime, Local};
+        use serde_json::json;
+
+        let session_data = self.session_data.read().unwrap();
+        let stage_results = self.stage_results.read().unwrap();
+        let session = &session_data.session;
+        let started_at: DateTime<Local> = session.started_at.into();
+
+        let performance = session_data.session_result.as_ref().map(|result| {
+            json!({
+                "tierRank": format!(
+                    "{}/{}",
+                    result.tier_name.clone().unwrap_or("unknown".to_string()),
+                    result.rank_name.clone().unwrap_or("unknown".to_string())
+                ),
+                "score": format!("{:.1}", result.score),
+                "cpm": format!("{:.1}", result.cpm),
+                "wpm": format!("{:.1}", result.wpm),
+                "accuracy": format!("{:.1}%", result.accuracy),
+                "duration": format!(
+                    "{}m {}s",
+                    result.duration_ms / 60000,
+                    (result.duration_ms % 60000) / 1000
+                ),
+                "stagesCompleted": result.stages_completed,
+                "stagesAttempted": result.stages_attempted,
+                "stagesSkipped": result.stages_skipped,
+            })
+        });
+
+        let stages: Vec<serde_json::Value> = stage_results
+            .iter()
+            .map(|stage| {
+                let status = if stage.was_failed {
+                    "FAILED"
+                } else if stage.was_skipped {
+                    "SKIPPED"
+                } else {
+                    "COMPLETED"
+                };
+                let file = match (&stage.file_path, stage.start_line, stage.end_line) {
+                    (Some(path), Some(start), Some(end)) => {
+                        Some(format!("{}:{}-{}", path, start, end))
+                    }
+                    _ => None,
+                };
+                json!({
+                    "number": stage.stage_number,
+                    "status": status,
+                    "file": file,
+                    "score": format!("{:.1}", stage.score),
+                    "cpm": format!("{:.1}", stage.cpm),
+                    "wpm": format!("{:.1}", stage.wpm),
+                    "keystrokes": stage.keystrokes,
+                    "mistakes": stage.mistakes,
+                    "accuracy": format!("{:.1}%", stage.accuracy),
+                    "duration": format!("{}ms", stage.duration_ms),
+                })
+            })
+            .collect();
+
+        json!({
+            "session": {
+                "repository": session_data
+                    .repository
+                    .as_ref()
+                    .map(|repo| format!("{}/{}", repo.user_name, repo.repository_name)),
+                "started": started_at.format("%Y-%m-%d %H:%M:%S").to_string(),
+                "branch": session.branch,
+                "commit": session
+                    .commit_hash
+                    .as_ref()
+                    .map(|commit| commit[..std::cmp::min(commit.len(), 12)].to_string()),
+            },
+            "performance": performance,
+            "stages": stages,
+            "stageScrollOffset": *self.stage_scroll_offset.read().unwrap(),
+        })
+    }
+
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }

@@ -10,6 +10,9 @@ import type { StageSummaryView } from './screens/stage-summary-screen'
 import type { HelpView } from './screens/help-screen'
 import type { InfoDialogView } from './screens/info-dialog-screen'
 import type { SettingsView } from './screens/settings-screen'
+import type { RecordsView } from './screens/records-screen'
+import type { SessionDetailView } from './screens/session-detail-screen'
+import type { AnalyticsView } from './screens/analytics-screen'
 
 export const PALETTE_ROLES = [
   'border',
@@ -114,6 +117,9 @@ export type ScreenViews = {
   Settings: SettingsView
   Help: HelpView
   InfoDialog: InfoDialogView
+  Records: RecordsView
+  SessionDetail: SessionDetailView
+  Analytics: AnalyticsView
 }
 
 export type ScreenName =
