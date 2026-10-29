@@ -11,3 +11,6 @@ stage 1: completed
 stage 2: completed
 stage 3: completed
 after stage 3: Animation
+session summary: shown
+total: sessions=1 completed=1 stages=3/3 mistakes=0 skipped=0
+exit requested: true

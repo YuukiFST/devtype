@@ -1,7 +1,8 @@
 /**
  * Source: the user's requirement that devtype keeps gittype's features with
  * nothing missing. This pins gittype's game flow (Loading → Title → three
- * Typing/StageSummary rounds → Animation) as the GUI drives it.
+ * Typing/StageSummary rounds → Animation → SessionSummary →
+ * TotalSummary → exit) as the GUI drives it.
  */
 import { afterAll, expect, test } from 'bun:test'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
@@ -48,6 +49,15 @@ test('a full session runs from loading to the rank animation', async () => {
 
   const after = harness.snapshot().screen
   lines.push(`after stage 3: ${after === 'SessionSummary' ? 'Animation' : after}`)
+
+  await harness.waitForScreen('SessionSummary', 30_000)
+  lines.push('session summary: shown')
+  await harness.press('escape')
+  const total = viewOf(await harness.waitForScreen('TotalSummary', 15_000), 'TotalSummary')
+  const { sessions, completed, stages, mistakes, skipped } = total.totals
+  lines.push(`total: sessions=${sessions} completed=${completed} stages=${stages} mistakes=${mistakes} skipped=${skipped}`)
+  await harness.press('escape')
+  lines.push(`exit requested: ${harness.snapshot().exitRequested}`)
 
   checkGolden(`${lines.join('\n')}\n`)
 }, 120_000)
