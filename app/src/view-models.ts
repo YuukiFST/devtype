@@ -3,6 +3,11 @@
  * (crates/gittype/src/presentation/tui/screens). Rust is the source of truth.
  */
 
+import type { AnimationView } from './screens/animation-screen'
+import type { LoadingView } from './screens/loading-screen'
+import type { SessionFailureView } from './screens/session-failure-screen'
+import type { StageSummaryView } from './screens/stage-summary-screen'
+
 export const PALETTE_ROLES = [
   'border',
   'title',
@@ -97,6 +102,12 @@ export type TypingView = {
 export type ScreenViews = {
   Title: TitleView
   Typing: TypingView
+  Loading: LoadingView
+  /** `null` until the stage result is available. */
+  StageSummary: StageSummaryView | null
+  SessionFailure: SessionFailureView
+  /** `null` until the session result is injected. */
+  Animation: AnimationView | null
 }
 
 export type ScreenName =
