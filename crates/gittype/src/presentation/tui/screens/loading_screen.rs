@@ -103,6 +103,8 @@ pub struct StepInfo {
     pub description: String,
 }
 
+mod loading_view_model;
+
 pub trait LoadingScreenInterface: Screen {}
 
 #[derive(shaku::Component)]
@@ -573,6 +575,10 @@ impl Screen for LoadingScreen {
             .spinner_index
             .store((current_index + 1) % 10, Ordering::Relaxed);
         Ok(true)
+    }
+
+    fn view_model(&self) -> serde_json::Value {
+        self.build_view_model()
     }
 
     fn as_any(&self) -> &dyn std::any::Any {
