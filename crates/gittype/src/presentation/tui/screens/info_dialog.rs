@@ -74,7 +74,7 @@ impl InfoDialogScreen {
     fn get_options() -> [(&'static str, InfoAction); 3] {
         [
             ("GitHub Repository", InfoAction::OpenGithub),
-            ("X #gittype", InfoAction::OpenX),
+            ("X #devtype", InfoAction::OpenX),
             ("Close", InfoAction::Close),
         ]
     }
@@ -89,7 +89,7 @@ impl InfoDialogScreen {
                     } else {
                         *self.state.write().unwrap() = InfoDialogState::Fallback {
                             title: "GitHub Repository".to_string(),
-                            url: "https://github.com/unhappychoice/gittype".to_string(),
+                            url: "https://github.com/YuukiFST/devtype".to_string(),
                         };
                         Ok(())
                     }
@@ -101,7 +101,7 @@ impl InfoDialogScreen {
                     } else {
                         *self.state.write().unwrap() = InfoDialogState::Fallback {
                             title: "X Search".to_string(),
-                            url: "https://x.com/search?q=%23gittype".to_string(),
+                            url: "https://x.com/search?q=%23devtype".to_string(),
                         };
                         Ok(())
                     }
@@ -118,12 +118,12 @@ impl InfoDialogScreen {
     }
 
     fn try_open_github() -> Result<bool> {
-        let url = "https://github.com/unhappychoice/gittype";
+        let url = "https://github.com/YuukiFST/devtype";
         Ok(browser::open_url(url).is_ok())
     }
 
     fn try_open_x() -> Result<bool> {
-        let url = "https://x.com/search?q=%23gittype";
+        let url = "https://x.com/search?q=%23devtype";
         Ok(browser::open_url(url).is_ok())
     }
 

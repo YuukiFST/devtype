@@ -324,7 +324,7 @@ impl HelpScreen {
             )]),
             Line::from(""),
             Line::from(Span::styled(
-                "GitType extracts real code constructs from repositories:",
+                "devtype extracts real code constructs from repositories:",
                 Style::default().fg(colors.text()),
             )),
             Line::from(""),
@@ -463,7 +463,7 @@ impl HelpScreen {
             Line::from(""),
             Line::from(vec![
                 Span::styled(
-                    format!("{:<33}", "gittype"),
+                    format!("{:<33}", "devtype"),
                     Style::default().fg(colors.text()),
                 ),
                 Span::styled(
@@ -473,7 +473,7 @@ impl HelpScreen {
             ]),
             Line::from(vec![
                 Span::styled(
-                    format!("{:<33}", "gittype /path/to/repo"),
+                    format!("{:<33}", "devtype /path/to/repo"),
                     Style::default().fg(colors.text()),
                 ),
                 Span::styled(
@@ -483,7 +483,7 @@ impl HelpScreen {
             ]),
             Line::from(vec![
                 Span::styled(
-                    format!("{:<33}", "gittype --repo owner/repo"),
+                    format!("{:<33}", "devtype --repo owner/repo"),
                     Style::default().fg(colors.text()),
                 ),
                 Span::styled(
@@ -493,7 +493,7 @@ impl HelpScreen {
             ]),
             Line::from(vec![
                 Span::styled(
-                    format!("{:<33}", "gittype --langs rust,python"),
+                    format!("{:<33}", "devtype --langs rust,python"),
                     Style::default().fg(colors.text()),
                 ),
                 Span::styled(
@@ -509,7 +509,7 @@ impl HelpScreen {
             Line::from(""),
             Line::from(vec![
                 Span::styled(
-                    format!("{:<33}", "gittype repo list"),
+                    format!("{:<33}", "devtype repo list"),
                     Style::default().fg(colors.text()),
                 ),
                 Span::styled(
@@ -519,7 +519,7 @@ impl HelpScreen {
             ]),
             Line::from(vec![
                 Span::styled(
-                    format!("{:<33}", "gittype repo clear"),
+                    format!("{:<33}", "devtype repo clear"),
                     Style::default().fg(colors.text()),
                 ),
                 Span::styled(
@@ -529,7 +529,7 @@ impl HelpScreen {
             ]),
             Line::from(vec![
                 Span::styled(
-                    format!("{:<33}", "gittype repo clear --force"),
+                    format!("{:<33}", "devtype repo clear --force"),
                     Style::default().fg(colors.text()),
                 ),
                 Span::styled(
@@ -539,7 +539,7 @@ impl HelpScreen {
             ]),
             Line::from(vec![
                 Span::styled(
-                    format!("{:<33}", "gittype repo play"),
+                    format!("{:<33}", "devtype repo play"),
                     Style::default().fg(colors.text()),
                 ),
                 Span::styled(
@@ -555,7 +555,7 @@ impl HelpScreen {
             Line::from(""),
             Line::from(vec![
                 Span::styled(
-                    format!("{:<33}", "gittype cache stats"),
+                    format!("{:<33}", "devtype cache stats"),
                     Style::default().fg(colors.text()),
                 ),
                 Span::styled(
@@ -565,7 +565,7 @@ impl HelpScreen {
             ]),
             Line::from(vec![
                 Span::styled(
-                    format!("{:<33}", "gittype cache clear"),
+                    format!("{:<33}", "devtype cache clear"),
                     Style::default().fg(colors.text()),
                 ),
                 Span::styled(
@@ -575,7 +575,7 @@ impl HelpScreen {
             ]),
             Line::from(vec![
                 Span::styled(
-                    format!("{:<33}", "gittype cache list"),
+                    format!("{:<33}", "devtype cache list"),
                     Style::default().fg(colors.text()),
                 ),
                 Span::styled(
@@ -591,7 +591,7 @@ impl HelpScreen {
             Line::from(""),
             Line::from(vec![
                 Span::styled(
-                    format!("{:<33}", "~/.gittype/"),
+                    format!("{:<33}", "~/.devtype/"),
                     Style::default().fg(colors.info()),
                 ),
                 Span::styled(
@@ -601,7 +601,7 @@ impl HelpScreen {
             ]),
             Line::from(vec![
                 Span::styled(
-                    format!("{:<33}", "~/.gittype/repos/"),
+                    format!("{:<33}", "~/.devtype/repos/"),
                     Style::default().fg(colors.info()),
                 ),
                 Span::styled(
@@ -611,7 +611,7 @@ impl HelpScreen {
             ]),
             Line::from(vec![
                 Span::styled(
-                    format!("{:<33}", "~/.gittype/cache/"),
+                    format!("{:<33}", "~/.devtype/cache/"),
                     Style::default().fg(colors.info()),
                 ),
                 Span::styled(
@@ -621,7 +621,7 @@ impl HelpScreen {
             ]),
             Line::from(vec![
                 Span::styled(
-                    format!("{:<33}", "~/.gittype/gittype.db"),
+                    format!("{:<33}", "~/.devtype/devtype.db"),
                     Style::default().fg(colors.info()),
                 ),
                 Span::styled(
@@ -636,19 +636,19 @@ impl HelpScreen {
             )]),
             Line::from(""),
             Line::from(vec![Span::styled(
-                "gittype --repo rust-lang/rust",
+                "devtype --repo rust-lang/rust",
                 Style::default().fg(colors.text()),
             )]),
             Line::from(vec![Span::styled(
-                "gittype --repo facebook/react",
+                "devtype --repo facebook/react",
                 Style::default().fg(colors.text()),
             )]),
             Line::from(vec![Span::styled(
-                "gittype --repo microsoft/vscode",
+                "devtype --repo microsoft/vscode",
                 Style::default().fg(colors.text()),
             )]),
             Line::from(vec![Span::styled(
-                "gittype --langs rust,typescript,python",
+                "devtype --langs rust,typescript,python",
                 Style::default().fg(colors.text()),
             )]),
         ])
@@ -657,12 +657,12 @@ impl HelpScreen {
     fn get_about_content(colors: &Colors) -> Text<'static> {
         Text::from(vec![
             Line::from(vec![Span::styled(
-                "GitType",
+                "devtype",
                 Style::default().fg(colors.title()).bold(),
             )]),
             Line::from(""),
             Line::from(Span::styled(
-                "A CLI code-typing game that turns your source code into typing challenges",
+                "A desktop code-typing game that turns your source code into typing challenges",
                 Style::default().fg(colors.text()),
             )),
             Line::from(""),
@@ -680,16 +680,39 @@ impl HelpScreen {
             )),
             Line::from(""),
             Line::from(vec![Span::styled(
+                "Based on gittype:",
+                Style::default().fg(colors.title()).bold(),
+            )]),
+            Line::from(""),
+            Line::from(vec![
+                Span::styled("• gittype by ", Style::default().fg(colors.text())),
+                Span::styled("unhappychoice", Style::default().fg(colors.success())),
+                Span::styled(" (MIT License)", Style::default().fg(colors.text())),
+            ]),
+            Line::from(Span::styled(
+                "  https://github.com/unhappychoice/gittype",
+                Style::default().fg(colors.text_secondary()),
+            )),
+            Line::from(Span::styled(
+                "  devtype runs gittype's game engine behind a GPU-rendered desktop interface.",
+                Style::default().fg(colors.text()),
+            )),
+            Line::from(""),
+            Line::from(vec![Span::styled(
                 "Development Team:",
                 Style::default().fg(colors.title()).bold(),
             )]),
             Line::from(""),
             Line::from(vec![
                 Span::styled(
-                    "• Creator & Lead Developer: ",
+                    "• gittype Creator & Lead Developer: ",
                     Style::default().fg(colors.text()),
                 ),
                 Span::styled("unhappychoice", Style::default().fg(colors.success())),
+            ]),
+            Line::from(vec![
+                Span::styled("• devtype: ", Style::default().fg(colors.text())),
+                Span::styled("YuukiFST", Style::default().fg(colors.success())),
             ]),
             Line::from(""),
             Line::from(vec![Span::styled(
@@ -714,6 +737,10 @@ impl HelpScreen {
                 Style::default().fg(colors.text()),
             )),
             Line::from(Span::styled(
+                "• gpuix for the GPU-rendered React interface",
+                Style::default().fg(colors.text()),
+            )),
+            Line::from(Span::styled(
                 "• All contributors and users providing feedback",
                 Style::default().fg(colors.text()),
             )),
@@ -730,6 +757,14 @@ impl HelpScreen {
             Line::from(Span::styled(
                 "• Ratatui - Terminal user interface library",
                 Style::default().fg(colors.text()),
+            )),
+            Line::from(Span::styled(
+                "• gpuix - React renderer for Zed's GPUI (Apache-2.0)",
+                Style::default().fg(colors.text()),
+            )),
+            Line::from(Span::styled(
+                "  https://github.com/remorses/gpuix",
+                Style::default().fg(colors.text_secondary()),
             )),
             Line::from(Span::styled(
                 "• Tree-sitter - Code parsing and syntax highlighting",
@@ -762,11 +797,11 @@ impl HelpScreen {
             )]),
             Line::from(""),
             Line::from(Span::styled(
-                "Share your progress with #gittype",
+                "Share your progress with #devtype",
                 Style::default().fg(colors.text()),
             )),
             Line::from(Span::styled(
-                "https://x.com/search?q=%23gittype",
+                "https://x.com/search?q=%23devtype",
                 Style::default().fg(colors.text()),
             )),
             Line::from(""),
@@ -780,12 +815,12 @@ impl HelpScreen {
                 Style::default().fg(colors.success()).bold(),
             )]),
             Line::from(Span::styled(
-                "https://github.com/unhappychoice/gittype",
+                "https://github.com/YuukiFST/devtype",
                 Style::default().fg(colors.text()),
             )),
             Line::from(""),
             Line::from(Span::styled(
-                "✨ Star the repository if you enjoy GitType!",
+                "✨ Star the repository if you enjoy devtype!",
                 Style::default().fg(colors.text()),
             )),
             Line::from(""),
@@ -847,7 +882,7 @@ impl HelpScreen {
             )]),
             Line::from(""),
             Line::from(Span::styled(
-                "GitType is open-source software.",
+                "devtype is open-source software.",
                 Style::default().fg(colors.text()),
             )),
             Line::from(Span::styled(
@@ -1010,11 +1045,11 @@ impl HelpScreen {
             Span::styled("★ ", Style::default().fg(colors.warning())),
             Span::styled("Star us on GitHub (", Style::default().fg(colors.text())),
             Span::styled(
-                "https://github.com/unhappychoice/gittype",
+                "https://github.com/YuukiFST/devtype",
                 Style::default().fg(colors.text_secondary()),
             ),
             Span::styled(
-                ") if you enjoy GitType! ",
+                ") if you enjoy devtype! ",
                 Style::default().fg(colors.text()),
             ),
             Span::styled("★", Style::default().fg(colors.warning())),
@@ -1059,7 +1094,7 @@ impl HelpScreen {
     }
 
     fn try_open_github() -> Result<bool> {
-        let url = "https://github.com/unhappychoice/gittype";
+        let url = "https://github.com/YuukiFST/devtype";
         Ok(browser::open_url(url).is_ok())
     }
 }
@@ -1153,7 +1188,7 @@ impl Screen for HelpScreen {
                         Ok(())
                     } else {
                         *self.github_fallback.write().unwrap() =
-                            Some("https://github.com/unhappychoice/gittype".to_string());
+                            Some("https://github.com/YuukiFST/devtype".to_string());
                         Ok(())
                     }
                 }
