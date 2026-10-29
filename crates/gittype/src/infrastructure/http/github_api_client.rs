@@ -31,7 +31,7 @@ mod real_impl {
         }
 
         pub async fn fetch_latest_release(&self) -> Result<GitHubRelease> {
-            let url = "https://api.github.com/repos/unhappychoice/gittype/releases/latest";
+            let url = "https://api.github.com/repos/YuukiFST/devtype/releases/latest";
             let response = self.client.get(url).send().await.map_err(|e| {
                 GitTypeError::ExtractionFailed(format!("Failed to fetch release: {}", e))
             })?;

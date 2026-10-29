@@ -4,7 +4,11 @@ import { useSnapshot, type EngineStore } from './engine-store'
 import { HelpScreen } from './screens/help-screen'
 import { InfoDialogScreen } from './screens/info-dialog-screen'
 import { SettingsScreen } from './screens/settings-screen'
+import { RepoListScreen } from './screens/repo-list-screen'
+import { RepoPlayScreen } from './screens/repo-play-screen'
 import { TitleScreen } from './screens/title-screen'
+import { TrendingLanguageSelectionScreen } from './screens/trending-language-selection-screen'
+import { TrendingRepositorySelectionScreen } from './screens/trending-repository-selection-screen'
 import { TypingScreen } from './screens/typing-screen'
 import { AnimationScreen } from './screens/animation-screen'
 import { LoadingScreen } from './screens/loading-screen'
@@ -59,6 +63,14 @@ function CurrentScreen({ snapshot }: { snapshot: Snapshot }) {
       return <SessionDetailScreen view={viewOf(snapshot, 'SessionDetail')} />
     case 'Analytics':
       return <AnalyticsScreen view={viewOf(snapshot, 'Analytics')} />
+    case 'RepoList':
+      return <RepoListScreen view={viewOf(snapshot, 'RepoList')} />
+    case 'RepoPlay':
+      return <RepoPlayScreen view={viewOf(snapshot, 'RepoPlay')} />
+    case 'TrendingLanguageSelection':
+      return <TrendingLanguageSelectionScreen view={viewOf(snapshot, 'TrendingLanguageSelection')} />
+    case 'TrendingRepositorySelection':
+      return <TrendingRepositorySelectionScreen view={viewOf(snapshot, 'TrendingRepositorySelection')} />
     default:
       return <UnportedScreen snapshot={snapshot} />
   }

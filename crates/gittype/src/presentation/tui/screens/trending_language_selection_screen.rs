@@ -169,6 +169,17 @@ impl Screen for TrendingLanguageSelectionScreen {
         Ok(())
     }
 
+    fn view_model(&self) -> serde_json::Value {
+        let languages: Vec<&str> = LanguageListView::languages()
+            .iter()
+            .map(|(display_name, _)| *display_name)
+            .collect();
+        serde_json::json!({
+            "languages": languages,
+            "selected": self.list_state.read().unwrap().selected(),
+        })
+    }
+
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }

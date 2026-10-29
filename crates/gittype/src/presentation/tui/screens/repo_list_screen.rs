@@ -1,6 +1,7 @@
 use crate::domain::events::presentation_events::NavigateTo;
 use crate::domain::events::EventBusInterface;
 use crate::domain::models::storage::StoredRepositoryWithLanguages;
+use crate::domain::models::Languages;
 use crate::domain::services::repository_service::RepositoryService;
 use crate::domain::services::theme_service::ThemeServiceInterface;
 use crate::infrastructure::database::database::{Database, DatabaseInterface};
@@ -49,6 +50,25 @@ impl RepoListScreen {
             theme_service,
         }
     }
+}
+
+/// A played repository row: name, cache status, challenge languages and URL.
+pub(crate) fn stored_repository_json(
+    repo: &StoredRepositoryWithLanguages,
+    is_cached: bool,
+) -> serde_json::Value {
+    let languages: Vec<String> = repo
+        .languages
+        .iter()
+        .map(|lang| Languages::get_display_name(Some(lang)))
+        .collect();
+    serde_json::json!({
+        "user": repo.user_name,
+        "name": repo.repository_name,
+        "cached": is_cached,
+        "languages": languages,
+        "url": repo.http_url(),
+    })
 }
 
 pub struct RepoListScreenDataProvider;
@@ -151,6 +171,20 @@ impl Screen for RepoListScreen {
 
     fn cleanup(&self) -> Result<()> {
         Ok(())
+    }
+
+    fn view_model(&self) -> serde_json::Value {
+        let repositories: Vec<serde_json::Value> = self
+            .repositories
+            .read()
+            .unwrap()
+            .iter()
+            .map(|(repo, is_cached)| stored_repository_json(repo, *is_cached))
+            .collect();
+        serde_json::json!({
+            "cacheDir": *self.cache_dir.read().unwrap(),
+            "repositories": repositories,
+        })
     }
 
     fn as_any(&self) -> &dyn std::any::Any {

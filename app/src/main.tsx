@@ -1,7 +1,6 @@
 import { render, type KeyEvent } from '@gpuix/react'
 
-import { App } from './app'
-import { createEngineStore } from './engine-store'
+import { createHostController, HostRoot } from './host/host'
 import { native, type KeyInput } from './native'
 
 function toKeyInput(event: KeyEvent): KeyInput | null {
@@ -15,17 +14,25 @@ function toKeyInput(event: KeyEvent): KeyInput | null {
   }
 }
 
-const engine = native.GameEngine.start({ repoPath: process.argv[2] })
-const store = createEngineStore(engine, (error) => {
-  console.error(error)
-  process.exit(1)
+const outcome = native.runCli(process.argv.slice(2))
+if (outcome.kind === 'exit') process.exit(outcome.exitCode)
+
+const controller = createHostController({
+  native,
+  exit: (code) => process.exit(code),
+  log: (line) => console.log(line),
+  logError: (line) => console.error(line),
 })
 
-store.subscribe(() => {
-  if (store.getSnapshot().exitRequested) process.exit(0)
+// gpuix exits with 0 when the window closes; an error or panic screen
+// still means the run failed.
+process.on('exit', () => {
+  if (controller.failed()) process.exitCode = 1
 })
 
-render(<App store={store} />, {
+controller.start(outcome)
+
+render(<HostRoot controller={controller} />, {
   title: 'devtype',
   width: 1180,
   height: 800,
@@ -36,6 +43,6 @@ render(<App store={store} />, {
   focus: process.env.GPUIX_BACKGROUND !== '1',
   onKeyDown: (event) => {
     const input = toKeyInput(event)
-    if (input) store.pressKey(input)
+    if (input) controller.pressKey(input)
   },
 })

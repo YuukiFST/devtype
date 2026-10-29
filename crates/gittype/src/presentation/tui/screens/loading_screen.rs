@@ -9,6 +9,7 @@ use crate::domain::services::theme_service::ThemeServiceInterface;
 use crate::domain::stores::{
     ChallengeStoreInterface, RepositoryStoreInterface, SessionStoreInterface,
 };
+use crate::presentation::cli::commands::game::game_error_lines;
 use crate::presentation::tui::views::LoadingMainView;
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::presentation::ui::Colors;
@@ -282,7 +283,7 @@ impl LoadingScreen {
                 Err(e) => {
                     log::error!("Repository processing failed: {}", e);
                     session_store.set_loading_failed(true);
-                    session_store.set_error_message(format!("Repository processing failed: {}", e));
+                    session_store.set_error_message(game_error_lines(&e).join("\n"));
                 }
             }
 

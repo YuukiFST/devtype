@@ -16,6 +16,7 @@
   "scripts": {
     "build:native": "napi build --manifest-path ../crates/devtype-native/Cargo.toml --package-json-path ../crates/devtype-native/package.json --output-dir native --no-js --dts index.d.ts",
     "build:native:release": "napi build --release --manifest-path ../crates/devtype-native/Cargo.toml --package-json-path ../crates/devtype-native/package.json --output-dir native --no-js --dts index.d.ts",
+    "build": "bun run build:native:release && bun build --compile src/exe-main.ts --outfile dist/devtype.exe",
     "dev": "bun --hot src/main.tsx",
     "start": "bun src/main.tsx",
     "typecheck": "tsc -p .",

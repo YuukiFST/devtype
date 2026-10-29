@@ -7,6 +7,18 @@ export declare class GameEngine {
    * parameters, then the Loading screen starts processing.
    */
   static start(options: GameOptions): GameEngine
+  /**
+   * One of the command screens, loaded like `run_screen`: the screen's
+   * default data, or `(language, period)` for trending repositories,
+   * which fetches the list before returning.
+   */
+  static startCliScreen(screen: `${CliScreen}`, language?: string | null, period?: string | null): GameEngine
+  /**
+   * What the command screen hands on, read as the `run_*` commands do:
+   * `owner/repo` for RepoPlay and trending repositories, the language
+   * code for trending languages, `null` when nothing was chosen.
+   */
+  cliSelection(): string | null
   pressKey(key: KeyInput): void
   /**
    * One frame: timed updates (countdown, animation, loading), then any
@@ -18,6 +30,37 @@ export declare class GameEngine {
    * string so the host can skip a re-render when nothing changed.
    */
   snapshot(): string
+}
+
+/**
+ * The latest devtype release when it is newer than this build, using
+ * gittype's 24-hour cache of the GitHub answer.
+ */
+export declare function checkForUpdate(): Promise<UpdateInfo | null>
+
+export interface CliOutcome {
+  /** `exit`, `game`, `repoList`, `repoPlay` or `trending`. */
+  kind: string
+  /** Process status for `exit`. */
+  exitCode: number
+  repoPath?: string
+  repo?: string
+  langs?: Array<string>
+  /** `trending` only. */
+  language?: string
+  /** `trending` only. */
+  period?: string
+}
+
+/**
+ * The screens `devtype repo list|play` and `devtype trending` open before a
+ * game starts.
+ */
+export declare const enum CliScreen {
+  RepoList = 'repoList',
+  RepoPlay = 'repoPlay',
+  TrendingLanguage = 'trendingLanguage',
+  TrendingRepository = 'trendingRepository',
 }
 
 export interface GameOptions {
@@ -36,4 +79,24 @@ export interface KeyInput {
   shift: boolean
   ctrl: boolean
   alt: boolean
+}
+
+/** JSON palette of the configured theme, for screens no engine renders. */
+export declare function loadPalette(): string
+
+/**
+ * Parses `argv` (user arguments, without the program name). `--help`,
+ * `--version` and usage errors print clap's output and exit.
+ */
+export declare function runCli(argv: Array<string>): CliOutcome
+
+/**
+ * JSON `{kind: "error", lines}` or `{kind: "panic", view}` for the first
+ * failure since the last call, or `null`.
+ */
+export declare function takeFailure(): string | null
+
+export interface UpdateInfo {
+  currentVersion: string
+  latestVersion: string
 }

@@ -13,6 +13,10 @@ import type { SettingsView } from './screens/settings-screen'
 import type { RecordsView } from './screens/records-screen'
 import type { SessionDetailView } from './screens/session-detail-screen'
 import type { AnalyticsView } from './screens/analytics-screen'
+import type { RepoListView } from './screens/repo-list-screen'
+import type { RepoPlayView } from './screens/repo-play-screen'
+import type { TrendingLanguageSelectionView } from './screens/trending-language-selection-screen'
+import type { TrendingRepositorySelectionView } from './screens/trending-repository-selection-screen'
 
 export const PALETTE_ROLES = [
   'border',
@@ -120,6 +124,10 @@ export type ScreenViews = {
   Records: RecordsView
   SessionDetail: SessionDetailView
   Analytics: AnalyticsView
+  RepoList: RepoListView
+  RepoPlay: RepoPlayView
+  TrendingLanguageSelection: TrendingLanguageSelectionView
+  TrendingRepositorySelection: TrendingRepositorySelectionView
 }
 
 export type ScreenName =
@@ -153,6 +161,8 @@ export type Snapshot = {
   exitRequested: boolean
   palette: RawPalette
   view: unknown
+  /** `handle_game_error` lines once repository processing has failed. */
+  loadingFailure: string[] | null
 }
 
 export function viewOf<S extends keyof ScreenViews>(snapshot: Snapshot, screen: S): ScreenViews[S] {

@@ -3,16 +3,16 @@ use clap::{Parser, Subcommand};
 use std::path::PathBuf;
 
 #[derive(Parser)]
-#[command(name = "gittype")]
+#[command(name = "devtype")]
 #[command(
     about = "A typing practice tool using your own code repositories - extracts all code chunks (functions, classes, methods, etc.)",
-    long_about = "GitType turns your own source code into typing challenges. \
+    long_about = "devtype turns your own source code into typing challenges. \
                   Practice typing by using functions, classes, and methods from your actual projects. \
                   \n\nExamples:\n  \
-                  gittype                           # Use current directory\n  \
-                  gittype /path/to/repo             # Use specific repository\n  \
-                  gittype --repo owner/repo         # Clone and use GitHub repository\n  \
-                  gittype --langs rust,python       # Filter by languages"
+                  devtype                           # Use current directory\n  \
+                  devtype /path/to/repo             # Use specific repository\n  \
+                  devtype --repo owner/repo         # Clone and use GitHub repository\n  \
+                  devtype --langs rust,python       # Filter by languages"
 )]
 #[command(version = env!("CARGO_PKG_VERSION"))]
 pub struct Cli {
