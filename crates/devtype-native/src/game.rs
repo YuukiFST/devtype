@@ -6,9 +6,12 @@ use gittype::domain::models::{ExtractionOptions, Languages};
 use gittype::domain::services::config_service::ConfigServiceInterface;
 use gittype::domain::services::session_manager_service::{SessionManager, SessionManagerInterface};
 use gittype::domain::services::theme_service::ThemeServiceInterface;
-use gittype::domain::stores::RepositoryStoreInterface;
+use gittype::domain::stores::{RepositoryStoreInterface, SessionStoreInterface};
 use gittype::infrastructure::logging;
 use gittype::presentation::di::AppModule;
+use gittype::presentation::tui::screens::{
+    RepoPlayScreen, TrendingLanguageSelectionScreen, TrendingRepositorySelectionScreen,
+};
 use gittype::presentation::tui::{ScreenManagerFactory, ScreenManagerImpl, ScreenType};
 use gittype::presentation::ui::view_model::palette_json;
 use napi::bindgen_prelude::*;
@@ -17,6 +20,7 @@ use ratatui::backend::TestBackend;
 use serde_json::{json, Value};
 use shaku::HasComponent;
 
+use crate::failure::{install_panic_hook, record_error};
 use crate::keys::{to_key_event, KeyInput};
 
 /// Buffer size the screens lay out against; matches a roomy terminal so
@@ -36,25 +40,31 @@ pub struct GameEngine {
     manager: Arc<Mutex<ScreenManagerImpl<TestBackend>>>,
     theme_service: Arc<dyn ThemeServiceInterface>,
     // Owns every component the screens hold Arcs into.
-    _container: AppModule,
+    container: AppModule,
 }
 
 static LOGGING: Once = Once::new();
 
+/// `run_cli`'s logging setup plus the panic hook, once per process.
 pub fn init_logging() {
     LOGGING.call_once(|| {
-        if logging::setup_logging().is_err() {
+        if let Err(e) = logging::setup_logging() {
             logging::setup_console_logging();
+            eprintln!("⚠️ Warning: Failed to setup file logging: {}", e);
+            eprintln!("   Logs will only be shown in console.");
         }
-        std::panic::set_hook(Box::new(|info| logging::log_panic_to_file(info)));
+        install_panic_hook();
     });
 }
 
+/// Runs `f`, turning a gittype error or a panic into a JS exception; the
+/// failure itself is kept for `take_failure`.
 fn guard<T>(what: &str, f: impl FnOnce() -> gittype::Result<T>) -> Result<T> {
     match catch_unwind(AssertUnwindSafe(f)) {
         Ok(Ok(value)) => Ok(value),
         Ok(Err(e)) => {
             logging::log_error_to_file(&e);
+            record_error(&e);
             Err(Error::from_reason(format!("{what}: {e}")))
         }
         Err(payload) => {
@@ -99,6 +109,42 @@ fn extraction_options(langs: Option<Vec<String>>) -> gittype::Result<ExtractionO
     Ok(options)
 }
 
+/// Config and theme, initialized as `run_game_session` does.
+pub fn init_services(container: &AppModule) -> Arc<dyn ThemeServiceInterface> {
+    let config_service: &dyn ConfigServiceInterface = container.resolve_ref();
+    if let Err(e) = config_service.init() {
+        log::warn!("Failed to initialize config service: {}", e);
+    }
+    let theme_service: Arc<dyn ThemeServiceInterface> = container.resolve();
+    if let Err(e) = theme_service.init() {
+        log::warn!("Failed to initialize theme service: {}", e);
+    }
+    theme_service
+}
+
+fn headless_manager(
+    container: &AppModule,
+    screen_type: ScreenType,
+) -> gittype::Result<Arc<Mutex<ScreenManagerImpl<TestBackend>>>> {
+    let factory: &dyn ScreenManagerFactory = container.resolve_ref();
+    let manager = Arc::new(Mutex::new(
+        factory.create_headless(HEADLESS_COLUMNS, HEADLESS_ROWS),
+    ));
+    manager.lock().unwrap().set_current_screen(screen_type)?;
+    ScreenManagerImpl::setup_event_subscriptions(&manager);
+    Ok(manager)
+}
+
+/// The screens `devtype repo list|play` and `devtype trending` open before a
+/// game starts.
+#[napi(string_enum = "camelCase")]
+pub enum CliScreen {
+    RepoList,
+    RepoPlay,
+    TrendingLanguage,
+    TrendingRepository,
+}
+
 #[napi]
 impl GameEngine {
     /// Same setup as `gittype` with no subcommand: config, theme, repository
@@ -109,15 +155,7 @@ impl GameEngine {
         guard("start", || {
             let container = AppModule::builder().build();
             wire_session_manager(&container);
-
-            let config_service: &dyn ConfigServiceInterface = container.resolve_ref();
-            if let Err(e) = config_service.init() {
-                log::warn!("Failed to initialize config service: {}", e);
-            }
-            let theme_service: Arc<dyn ThemeServiceInterface> = container.resolve();
-            if let Err(e) = theme_service.init() {
-                log::warn!("Failed to initialize theme service: {}", e);
-            }
+            let theme_service = init_services(&container);
 
             let repository_store: &dyn RepositoryStoreInterface = container.resolve_ref();
             match options.repo {
@@ -128,22 +166,79 @@ impl GameEngine {
             }
             repository_store.set_extraction_options(extraction_options(options.langs)?);
 
-            let factory: &dyn ScreenManagerFactory = container.resolve_ref();
-            let manager = Arc::new(Mutex::new(
-                factory.create_headless(HEADLESS_COLUMNS, HEADLESS_ROWS),
-            ));
-            manager
-                .lock()
-                .unwrap()
-                .set_current_screen(ScreenType::Loading)?;
-            ScreenManagerImpl::setup_event_subscriptions(&manager);
-
+            let manager = headless_manager(&container, ScreenType::Loading)?;
             Ok(Self {
                 manager,
                 theme_service,
-                _container: container,
+                container,
             })
         })
+    }
+
+    /// One of the command screens, loaded like `run_screen`: the screen's
+    /// default data, or `(language, period)` for trending repositories,
+    /// which fetches the list before returning.
+    // The generated `const enum` cannot be read at runtime, so callers pass
+    // its string values.
+    #[napi(
+        factory,
+        ts_args_type = "screen: `${CliScreen}`, language?: string | null, period?: string | null"
+    )]
+    pub fn start_cli_screen(
+        screen: CliScreen,
+        language: Option<String>,
+        period: Option<String>,
+    ) -> Result<Self> {
+        init_logging();
+        guard("start_cli_screen", || {
+            let container = AppModule::builder().build();
+            let theme_service = init_services(&container);
+            let screen_type = match screen {
+                CliScreen::RepoList => ScreenType::RepoList,
+                CliScreen::RepoPlay => ScreenType::RepoPlay,
+                CliScreen::TrendingLanguage => ScreenType::TrendingLanguageSelection,
+                CliScreen::TrendingRepository => ScreenType::TrendingRepositorySelection,
+            };
+            let manager = headless_manager(&container, screen_type.clone())?;
+            if let CliScreen::TrendingRepository = screen {
+                let params = (language, period.unwrap_or_else(|| "daily".to_string()));
+                if let Some(screen) = manager.lock().unwrap().get_screen_mut(&screen_type) {
+                    screen.init_with_data(Box::new(params))?;
+                }
+            }
+            Ok(Self {
+                manager,
+                theme_service,
+                container,
+            })
+        })
+    }
+
+    /// What the command screen hands on, read as the `run_*` commands do:
+    /// `owner/repo` for RepoPlay and trending repositories, the language
+    /// code for trending languages, `null` when nothing was chosen.
+    #[napi]
+    pub fn cli_selection(&self) -> Option<String> {
+        let manager = self.manager.lock().unwrap();
+        let screen = manager.get_screen(manager.get_current_screen_type())?;
+        let any = screen.as_any();
+        if let Some(screen) = any.downcast_ref::<RepoPlayScreen>() {
+            return screen
+                .get_selected_repository()
+                .map(|(repo, _)| format!("{}/{}", repo.user_name, repo.repository_name));
+        }
+        if let Some(screen) = any.downcast_ref::<TrendingLanguageSelectionScreen>() {
+            return screen.get_selected_language();
+        }
+        if let Some(screen) = any.downcast_ref::<TrendingRepositorySelectionScreen>() {
+            return screen.get_selected_index().and_then(|idx| {
+                screen
+                    .get_repositories()
+                    .get(idx)
+                    .map(|repo| repo.repo_name.clone())
+            });
+        }
+        None
     }
 
     #[napi]
@@ -172,6 +267,14 @@ impl GameEngine {
                 .get_screen(&screen_type)
                 .map(|screen| screen.view_model())
                 .unwrap_or(Value::Null);
+            // gittype falls back to Title when repository processing fails;
+            // the host shows the failure instead.
+            let session_store: &dyn SessionStoreInterface = self.container.resolve_ref();
+            let loading_failure = session_store
+                .is_loading_failed()
+                .then(|| session_store.get_error_message())
+                .flatten()
+                .map(|message| message.lines().map(str::to_string).collect::<Vec<_>>());
             Ok(json!({
                 "screen": format!("{:?}", screen_type),
                 "stack": manager
@@ -182,6 +285,7 @@ impl GameEngine {
                 "exitRequested": manager.is_exit_requested(),
                 "palette": palette_json(&self.theme_service.get_colors()),
                 "view": view,
+                "loadingFailure": loading_failure,
             })
             .to_string())
         })
