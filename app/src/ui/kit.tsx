@@ -85,6 +85,9 @@ export function KeyCap({ label, color }: { label: string; color?: string }) {
   return (
     <div
       style={{
+        // A filled box wins GPUI's hit test, which would swallow the click
+        // meant for the Pressable around a KeyHint.
+        pointerEvents: 'none',
         paddingLeft: 7,
         paddingRight: 7,
         paddingTop: 2,

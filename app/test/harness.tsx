@@ -3,6 +3,7 @@ import { mkdirSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from 'node
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
+import { connectTest } from '@gpuix/react/automation'
 import { createTestRoot } from '@gpuix/react/testing'
 
 import { App } from '../src/app'
@@ -129,6 +130,8 @@ export type Harness = {
   playStage: (delayMs?: number) => Promise<void>
   waitForScreen: (screen: Snapshot['screen'], timeoutMs?: number) => Promise<Snapshot>
   screenshot: (path: string) => Promise<void>
+  /** Clicks the center of the first element whose text is `text`, like a mouse would. */
+  clickText: (text: string) => Promise<void>
   dispose: () => void
 }
 
@@ -141,6 +144,7 @@ export async function startHarness(options: GameOptions, home: string): Promise<
   })
   const { render, renderer } = createTestRoot({ width: 1180, height: 800, tabNavigation: false, keyboardFocusDim: false })
   render(<App store={store} />)
+  const automation = await connectTest(renderer)
 
   const settle = async () => {
     await new Promise((resolve) => setTimeout(resolve, 40))
@@ -190,6 +194,11 @@ export async function startHarness(options: GameOptions, home: string): Promise<
     screenshot: async (path) => {
       await settle()
       renderer.captureScreenshot(path)
+    },
+    clickText: async (text) => {
+      await settle()
+      await automation.getByText(text).click()
+      await settle()
     },
     dispose: () => store.stop(),
   }
