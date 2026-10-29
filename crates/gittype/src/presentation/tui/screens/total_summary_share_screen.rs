@@ -248,7 +248,7 @@ impl Screen for TotalSummaryShareScreen {
         let colors = self.theme_service.get_colors();
         let fallback_url = self.fallback_url.read().unwrap();
         if let Some((url, platform)) = &*fallback_url {
-            SharingView::render_fallback_url(frame, url, platform, &colors);
+            SharingView::render_fallback_url(frame, url, platform, " Exit", &colors);
         } else {
             let total_result = self.total_result.read().unwrap();
             SharingView::render_menu(frame, &total_result, &colors);

@@ -1,10 +1,8 @@
 use anyhow::Result;
-use crossterm::event::KeyCode;
 
 use crate::domain::models::{GitRepository, SessionResult};
 use crate::domain::services::scoring::Rank;
 use crate::infrastructure::browser;
-use crate::presentation::ui::Colors;
 
 #[derive(Debug, Clone)]
 pub enum SharingPlatform {
@@ -29,6 +27,13 @@ impl SharingPlatform {
     }
 }
 
+/// Whether the share URL reached a browser or must be shown to the user.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ShareOutcome {
+    Opened,
+    Fallback(String),
+}
+
 pub struct SharingService;
 
 impl SharingService {
@@ -36,18 +41,16 @@ impl SharingService {
         metrics: &SessionResult,
         platform: SharingPlatform,
         repo_info: &Option<GitRepository>,
-    ) -> Result<()> {
+    ) -> ShareOutcome {
         let url = Self::generate_share_url(metrics, &platform, repo_info);
+        Self::open_or_fallback(url)
+    }
 
+    /// Opens `url` in the browser, or hands it back for the screen to show.
+    pub fn open_or_fallback(url: String) -> ShareOutcome {
         match Self::open_browser(&url) {
-            Ok(()) => {
-                // Browser opened successfully
-                Ok(())
-            }
-            Err(_) => {
-                // Fallback: display URL to user
-                Self::display_url_fallback(&url, &platform)
-            }
+            Ok(()) => ShareOutcome::Opened,
+            Err(_) => ShareOutcome::Fallback(url),
         }
     }
 
@@ -120,107 +123,5 @@ impl SharingService {
 
     fn open_browser(url: &str) -> Result<()> {
         browser::open_url(url).map_err(|e| anyhow::anyhow!("Failed to open browser: {}", e))
-    }
-
-    fn display_url_fallback(url: &str, platform: &SharingPlatform) -> Result<()> {
-        use crossterm::{
-            cursor::MoveTo,
-            event::{self, Event},
-            execute,
-            style::{Attribute, Print, ResetColor, SetAttribute, SetForegroundColor},
-            terminal::{self, ClearType},
-        };
-        use std::io::{stdout, Write};
-
-        // Use default theme for fallback display
-        let default_theme_json = include_str!("../../assets/themes/default.json");
-        let theme_file: crate::domain::models::color_scheme::ThemeFile =
-            serde_json::from_str(default_theme_json).expect("Default theme should be valid JSON");
-        let color_scheme = crate::domain::models::color_scheme::ColorScheme::from_theme_file(
-            &theme_file,
-            &crate::domain::models::color_mode::ColorMode::Dark,
-        );
-        let colors = crate::presentation::ui::Colors::new(color_scheme);
-
-        let mut stdout = stdout();
-        execute!(stdout, terminal::Clear(ClearType::All))?;
-
-        let (terminal_width, terminal_height) = terminal::size()?;
-        let center_row = terminal_height / 2;
-        let center_col = terminal_width / 2;
-
-        // Title
-        let title = format!("⚠️  Could not open {} automatically", platform.name());
-        let title_col = center_col.saturating_sub(title.len() as u16 / 2);
-        execute!(stdout, MoveTo(title_col, center_row.saturating_sub(6)))?;
-        execute!(
-            stdout,
-            SetAttribute(Attribute::Bold),
-            SetForegroundColor(Colors::to_crossterm(colors.warning()))
-        )?;
-        execute!(stdout, Print(&title))?;
-        execute!(stdout, ResetColor)?;
-
-        // Instructions
-        let instruction = "Please copy the URL below and open it in your browser:";
-        let instruction_col = center_col.saturating_sub(instruction.len() as u16 / 2);
-        execute!(
-            stdout,
-            MoveTo(instruction_col, center_row.saturating_sub(4))
-        )?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(colors.text()))
-        )?;
-        execute!(stdout, Print(instruction))?;
-        execute!(stdout, ResetColor)?;
-
-        // URL display - show full URL on single line, let it overflow if needed
-        let url_display = format!("📋 {}", url);
-        execute!(stdout, MoveTo(2, center_row.saturating_sub(1)))?;
-        execute!(
-            stdout,
-            SetAttribute(Attribute::Bold),
-            SetForegroundColor(Colors::to_crossterm(colors.info()))
-        )?;
-        execute!(stdout, Print(&url_display))?;
-        execute!(stdout, ResetColor)?;
-
-        // Additional info
-        let info = "💡 Tip: Select and copy the URL with your mouse or keyboard";
-        let info_col = center_col.saturating_sub(info.len() as u16 / 2);
-        execute!(stdout, MoveTo(info_col, center_row + 4))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(colors.text_secondary()))
-        )?;
-        execute!(stdout, Print(info))?;
-        execute!(stdout, ResetColor)?;
-
-        // Continue prompt
-        let continue_text = "[ESC] Back";
-        let continue_col = center_col.saturating_sub(continue_text.len() as u16 / 2);
-        execute!(stdout, MoveTo(continue_col, center_row + 6))?;
-        execute!(
-            stdout,
-            SetForegroundColor(Colors::to_crossterm(colors.success()))
-        )?;
-        execute!(stdout, Print(continue_text))?;
-        execute!(stdout, ResetColor)?;
-
-        stdout.flush()?;
-
-        // Wait for user input
-        loop {
-            if event::poll(std::time::Duration::from_millis(100))? {
-                if let Event::Key(key_event) = event::read()? {
-                    if key_event.code == KeyCode::Esc {
-                        break;
-                    }
-                }
-            }
-        }
-
-        Ok(())
     }
 }

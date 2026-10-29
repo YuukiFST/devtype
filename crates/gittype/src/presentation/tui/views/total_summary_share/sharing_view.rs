@@ -138,6 +138,7 @@ impl SharingView {
         frame: &mut Frame,
         url: &str,
         platform: &SharingPlatform,
+        esc_label: &str,
         colors: &Colors,
     ) {
         let area = frame.area();
@@ -207,7 +208,7 @@ impl SharingView {
         // Exit option
         let exit = Line::from(vec![
             Span::styled("[ESC]", Style::default().fg(colors.error())),
-            Span::styled(" Exit", Style::default().fg(colors.text())),
+            Span::styled(esc_label, Style::default().fg(colors.text())),
         ]);
         frame.render_widget(Paragraph::new(exit).alignment(Alignment::Center), chunks[7]);
     }

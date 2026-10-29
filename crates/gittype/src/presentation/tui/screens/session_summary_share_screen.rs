@@ -5,9 +5,9 @@ use crate::domain::services::session_manager_service::SessionManagerInterface;
 use crate::domain::services::theme_service::ThemeServiceInterface;
 use crate::domain::services::SessionManager;
 use crate::domain::stores::RepositoryStoreInterface;
-use crate::presentation::sharing::{SharingPlatform, SharingService};
+use crate::presentation::sharing::{ShareOutcome, SharingPlatform, SharingService};
 use crate::presentation::tui::views::{
-    ShareBackOptionView, SharePlatformOptionsView, SharePreviewView, ShareTitleView,
+    ShareBackOptionView, SharePlatformOptionsView, SharePreviewView, ShareTitleView, SharingView,
 };
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::{GitTypeError, Result};
@@ -40,6 +40,8 @@ pub struct SessionSummaryShareScreen {
     session_result: RwLock<Option<SessionResult>>,
     #[shaku(default)]
     git_repository: RwLock<Option<GitRepository>>,
+    #[shaku(default)]
+    fallback_url: RwLock<Option<(String, SharingPlatform)>>,
     #[shaku(inject)]
     event_bus: Arc<dyn EventBusInterface>,
     #[shaku(inject)]
@@ -60,11 +62,31 @@ impl SessionSummaryShareScreen {
         Self {
             session_result: RwLock::new(None),
             git_repository: RwLock::new(None),
+            fallback_url: RwLock::new(None),
             event_bus,
             theme_service,
             session_manager,
             repository_store,
         }
+    }
+
+    /// Pops back to the results once the browser opens; otherwise keeps the
+    /// URL so the screen can show it.
+    fn share_on(&self, platform: SharingPlatform) -> Result<()> {
+        let session_result = self.session_result.read().unwrap();
+        let git_repository = self.git_repository.read().unwrap();
+        let Some(ref session_result) = *session_result else {
+            self.event_bus.as_event_bus().publish(NavigateTo::Pop);
+            return Ok(());
+        };
+        match SharingService::share_result(session_result, platform.clone(), &git_repository) {
+            ShareOutcome::Opened => self.event_bus.as_event_bus().publish(NavigateTo::Pop),
+            ShareOutcome::Fallback(url) => {
+                log::warn!("Failed to open browser for {}. URL: {}", platform.name(), url);
+                *self.fallback_url.write().unwrap() = Some((url, platform));
+            }
+        }
+        Ok(())
     }
 }
 
@@ -124,65 +146,19 @@ impl Screen for SessionSummaryShareScreen {
 
         *self.session_result.write().unwrap() = session_result;
         *self.git_repository.write().unwrap() = git_repository;
+        *self.fallback_url.write().unwrap() = None;
 
         Ok(())
     }
 
     fn handle_key_event(&self, key_event: crossterm::event::KeyEvent) -> Result<()> {
         match key_event.code {
-            KeyCode::Char('1') => {
-                let session_result = self.session_result.read().unwrap();
-                let git_repository = self.git_repository.read().unwrap();
-                if let Some(ref session_result) = *session_result {
-                    let _ = SharingService::share_result(
-                        session_result,
-                        SharingPlatform::X,
-                        &git_repository,
-                    );
-                }
-                self.event_bus.as_event_bus().publish(NavigateTo::Pop);
-                Ok(())
-            }
-            KeyCode::Char('2') => {
-                let session_result = self.session_result.read().unwrap();
-                let git_repository = self.git_repository.read().unwrap();
-                if let Some(ref session_result) = *session_result {
-                    let _ = SharingService::share_result(
-                        session_result,
-                        SharingPlatform::Reddit,
-                        &git_repository,
-                    );
-                }
-                self.event_bus.as_event_bus().publish(NavigateTo::Pop);
-                Ok(())
-            }
-            KeyCode::Char('3') => {
-                let session_result = self.session_result.read().unwrap();
-                let git_repository = self.git_repository.read().unwrap();
-                if let Some(ref session_result) = *session_result {
-                    let _ = SharingService::share_result(
-                        session_result,
-                        SharingPlatform::LinkedIn,
-                        &git_repository,
-                    );
-                }
-                self.event_bus.as_event_bus().publish(NavigateTo::Pop);
-                Ok(())
-            }
-            KeyCode::Char('4') => {
-                let session_result = self.session_result.read().unwrap();
-                let git_repository = self.git_repository.read().unwrap();
-                if let Some(ref session_result) = *session_result {
-                    let _ = SharingService::share_result(
-                        session_result,
-                        SharingPlatform::Facebook,
-                        &git_repository,
-                    );
-                }
-                self.event_bus.as_event_bus().publish(NavigateTo::Pop);
-                Ok(())
-            }
+            KeyCode::Char('1') => self.share_on(SharingPlatform::X),
+            KeyCode::Char('2') => self.share_on(SharingPlatform::Reddit),
+            KeyCode::Char('3') => self.share_on(SharingPlatform::LinkedIn),
+            KeyCode::Char('4') => self.share_on(SharingPlatform::Facebook),
             KeyCode::Esc => {
+                *self.fallback_url.write().unwrap() = None;
                 self.event_bus.as_event_bus().publish(NavigateTo::Pop);
                 Ok(())
             }
@@ -196,6 +172,10 @@ impl Screen for SessionSummaryShareScreen {
 
     fn render_ratatui(&self, frame: &mut Frame) -> Result<()> {
         let colors = self.theme_service.get_colors();
+        if let Some((url, platform)) = &*self.fallback_url.read().unwrap() {
+            SharingView::render_fallback_url(frame, url, platform, " Back", &colors);
+            return Ok(());
+        }
         let session_result = self.session_result.read().unwrap();
         let git_repository = self.git_repository.read().unwrap();
         if let Some(ref session_result) = *session_result {
