@@ -14,6 +14,9 @@ use ratatui::{
 };
 use std::sync::{Arc, RwLock};
 
+const DEFAULT_LOG_PATH: &str = "~/.devtype/logs/gittype_YYYYMMDD_HHMMSS.log";
+const ISSUES_URL: &str = "https://github.com/YuukiFST/devtype/issues";
+
 pub trait PanicScreenInterface: Screen {}
 
 #[derive(shaku::Component)]
@@ -102,7 +105,7 @@ impl PanicScreen {
 
         // Render help information
         let log_path = get_current_log_file_path()
-            .unwrap_or_else(|| "~/.gittype/logs/gittype_YYYYMMDD_HHMMSS.log".to_string());
+            .unwrap_or_else(|| DEFAULT_LOG_PATH.to_string());
 
         let help_lines = vec![
             Line::from(""),
@@ -116,7 +119,7 @@ impl PanicScreen {
                 "🐛 Report this issue:",
                 Style::default().fg(colors.stage_info()),
             )),
-            Line::from(Span::raw("https://github.com/unhappychoice/gittype/issues")),
+            Line::from(Span::raw(ISSUES_URL)),
             Line::from(""),
         ];
 
@@ -238,6 +241,28 @@ impl Screen for PanicScreen {
 
     fn update(&self) -> Result<bool> {
         Ok(false)
+    }
+
+    fn view_model(&self) -> serde_json::Value {
+        let error_message = self.error_message.read().unwrap();
+        let mut message_lines = Vec::new();
+        let mut location = None;
+        for line in error_message.lines() {
+            match line.trim().strip_prefix("Location:") {
+                Some(info) => location = Some(info.trim().to_string()),
+                None => message_lines.push(line.to_string()),
+            }
+        }
+        serde_json::json!({
+            "title": "APPLICATION PANIC",
+            "apology": "We sincerely apologize for this unexpected error.",
+            "sessionNote": "Progress is saved per session. Current session data may be lost.",
+            "logPath": get_current_log_file_path().unwrap_or_else(|| DEFAULT_LOG_PATH.to_string()),
+            "issuesUrl": ISSUES_URL,
+            "timestamp": *self.timestamp.read().unwrap(),
+            "messageLines": message_lines,
+            "location": location,
+        })
     }
 
     fn as_any(&self) -> &dyn std::any::Any {

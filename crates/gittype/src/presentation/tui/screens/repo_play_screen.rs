@@ -5,6 +5,7 @@ use crate::domain::services::repository_service::RepositoryService;
 use crate::domain::services::theme_service::ThemeServiceInterface;
 use crate::infrastructure::database::database::{Database, DatabaseInterface};
 use crate::infrastructure::git::RemoteGitRepositoryClient;
+use crate::presentation::tui::screens::repo_list_screen::stored_repository_json;
 use crate::presentation::tui::views::repo_play::{ControlsView, HeaderView, RepositoryListView};
 use crate::presentation::tui::{Screen, ScreenDataProvider, ScreenType, UpdateStrategy};
 use crate::Result;
@@ -193,6 +194,20 @@ impl Screen for RepoPlayScreen {
 
     fn cleanup(&self) -> Result<()> {
         Ok(())
+    }
+
+    fn view_model(&self) -> serde_json::Value {
+        let repositories: Vec<serde_json::Value> = self
+            .repositories
+            .read()
+            .unwrap()
+            .iter()
+            .map(|(repo, is_cached)| stored_repository_json(repo, *is_cached))
+            .collect();
+        serde_json::json!({
+            "repositories": repositories,
+            "selected": self.list_state.read().unwrap().selected(),
+        })
     }
 
     fn as_any(&self) -> &dyn std::any::Any {

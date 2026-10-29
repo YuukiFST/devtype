@@ -79,6 +79,11 @@ impl LanguageListView {
         SUPPORTED_LANGUAGES.get(index).map(|(_, code)| *code)
     }
 
+    /// `(display name, language code)` in list order.
+    pub fn languages() -> &'static [(&'static str, &'static str)] {
+        SUPPORTED_LANGUAGES
+    }
+
     pub fn languages_count() -> usize {
         SUPPORTED_LANGUAGES.len()
     }

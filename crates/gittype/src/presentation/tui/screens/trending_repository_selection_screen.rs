@@ -198,6 +198,26 @@ impl Screen for TrendingRepositorySelectionScreen {
         Ok(())
     }
 
+    fn view_model(&self) -> serde_json::Value {
+        let repositories: Vec<serde_json::Value> = self
+            .repositories
+            .read()
+            .unwrap()
+            .iter()
+            .map(|repo| {
+                serde_json::json!({
+                    "name": repo.repo_name,
+                    "language": repo.primary_language.as_deref().unwrap_or("Unknown"),
+                    "description": repo.description.as_deref().unwrap_or("No description"),
+                })
+            })
+            .collect();
+        serde_json::json!({
+            "repositories": repositories,
+            "selected": self.list_state.read().unwrap().selected(),
+        })
+    }
+
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
