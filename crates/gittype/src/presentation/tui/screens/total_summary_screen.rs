@@ -233,6 +233,44 @@ impl Screen for TotalSummaryScreen {
         Ok(false)
     }
 
+    fn view_model(&self) -> serde_json::Value {
+        let total_result = self.total_result.read().unwrap();
+        let Some(ref total) = *total_result else {
+            return serde_json::Value::Null;
+        };
+        // Same figures and formatting as AsciiScoreView and StatisticsView.
+        serde_json::json!({
+            "title": "=== TOTAL SUMMARY ===",
+            "score": {
+                "value": format!("{:.0}", total.total_score),
+                "art": AsciiScoreView::create_ascii_numbers(&format!("{:.0}", total.total_score)),
+            },
+            "overall": {
+                "cpm": format!("{:.1}", total.overall_cpm),
+                "wpm": format!("{:.1}", total.overall_wpm),
+                "accuracy": format!("{:.1}%", total.overall_accuracy),
+            },
+            "totals": {
+                "sessions": total.total_sessions_attempted.to_string(),
+                "completed": total.total_sessions_completed.to_string(),
+                "stages": format!("{}/{}", total.total_stages_completed, total.total_stages_attempted),
+                "keystrokes": total.total_keystrokes.to_string(),
+                "mistakes": total.total_mistakes.to_string(),
+                "skipped": total.total_stages_skipped.to_string(),
+            },
+            "bestSession": {
+                "cpm": format!("{:.0} CPM", total.best_session_wpm * 5.0),
+                "accuracy": format!("{:.1}%", total.best_session_accuracy),
+            },
+            "worstSession": {
+                "cpm": format!("{:.0} CPM", total.worst_session_wpm * 5.0),
+                "accuracy": format!("{:.1}%", total.worst_session_accuracy),
+            },
+            "thanks": SharingView::THANKS_TEXT,
+            "star": SharingView::STAR_TEXT,
+        })
+    }
+
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }

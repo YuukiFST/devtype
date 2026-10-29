@@ -12,6 +12,9 @@ use ratatui::{
 pub struct SharingView;
 
 impl SharingView {
+    pub const THANKS_TEXT: &'static str = "Thanks for playing devtype!";
+    pub const STAR_TEXT: &'static str = "Star us on GitHub: https://github.com/YuukiFST/devtype";
+
     pub fn render_menu(frame: &mut Frame, total_summary: &TotalResult, colors: &Colors) {
         let area = frame.area();
         let platforms = SharingPlatform::all();
@@ -60,8 +63,45 @@ impl SharingView {
         .alignment(Alignment::Center);
         frame.render_widget(title, chunks[1]);
 
-        // Preview line with colors
-        let preview = Line::from(vec![
+        frame.render_widget(
+            Paragraph::new(Self::preview_line(total_summary, colors)).alignment(Alignment::Center),
+            chunks[3],
+        );
+
+        // Platform options
+        let platform_chunks = Layout::default()
+            .direction(Direction::Vertical)
+            .constraints(vec![Constraint::Length(1); platforms.len()])
+            .split(chunks[5]);
+
+        for (i, platform) in platforms.iter().enumerate() {
+            let option = Line::from(vec![
+                Span::styled(
+                    format!("[{}]", i + 1),
+                    Style::default().fg(colors.success()),
+                ),
+                Span::styled(
+                    format!(" {}", platform.name()),
+                    Style::default().fg(colors.text()),
+                ),
+            ]);
+            frame.render_widget(
+                Paragraph::new(option).alignment(Alignment::Center),
+                platform_chunks[i],
+            );
+        }
+
+        // Back option
+        let back = Line::from(vec![
+            Span::styled("[ESC]", Style::default().fg(colors.error())),
+            Span::styled(" Back to Exit Screen", Style::default().fg(colors.text())),
+        ]);
+        frame.render_widget(Paragraph::new(back).alignment(Alignment::Center), chunks[7]);
+    }
+
+    /// Score, CPM, keystrokes, sessions and time, as the menu previews them.
+    pub fn preview_line(total_summary: &TotalResult, colors: &Colors) -> Line<'static> {
+        Line::from(vec![
             Span::styled("Score: ", Style::default().fg(colors.score())),
             Span::styled(
                 format!("{:.0}", total_summary.total_score),
@@ -97,41 +137,7 @@ impl SharingView {
                 ),
                 Style::default().fg(colors.text()),
             ),
-        ]);
-        frame.render_widget(
-            Paragraph::new(preview).alignment(Alignment::Center),
-            chunks[3],
-        );
-
-        // Platform options
-        let platform_chunks = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints(vec![Constraint::Length(1); platforms.len()])
-            .split(chunks[5]);
-
-        for (i, platform) in platforms.iter().enumerate() {
-            let option = Line::from(vec![
-                Span::styled(
-                    format!("[{}]", i + 1),
-                    Style::default().fg(colors.success()),
-                ),
-                Span::styled(
-                    format!(" {}", platform.name()),
-                    Style::default().fg(colors.text()),
-                ),
-            ]);
-            frame.render_widget(
-                Paragraph::new(option).alignment(Alignment::Center),
-                platform_chunks[i],
-            );
-        }
-
-        // Back option
-        let back = Line::from(vec![
-            Span::styled("[ESC]", Style::default().fg(colors.error())),
-            Span::styled(" Back to Exit Screen", Style::default().fg(colors.text())),
-        ]);
-        frame.render_widget(Paragraph::new(back).alignment(Alignment::Center), chunks[7]);
+        ])
     }
 
     pub fn render_fallback_url(
@@ -227,7 +233,7 @@ impl SharingView {
 
         // Thanks message
         let thanks = Paragraph::new(Line::from(vec![Span::styled(
-            "Thanks for playing devtype!",
+            Self::THANKS_TEXT,
             Style::default()
                 .fg(colors.success())
                 .add_modifier(Modifier::BOLD),
@@ -237,7 +243,7 @@ impl SharingView {
 
         // GitHub link
         let github = Paragraph::new(Line::from(vec![Span::styled(
-            "✨ Star us on GitHub: https://github.com/YuukiFST/devtype",
+            format!("✨ {}", Self::STAR_TEXT),
             Style::default().fg(colors.warning()),
         )]))
         .alignment(Alignment::Center);

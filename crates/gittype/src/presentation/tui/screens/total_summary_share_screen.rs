@@ -264,6 +264,22 @@ impl Screen for TotalSummaryShareScreen {
         Ok(true)
     }
 
+    fn view_model(&self) -> serde_json::Value {
+        use crate::presentation::ui::view_model::{
+            line_json, share_fallback_json, share_platforms_json,
+        };
+
+        let colors = self.theme_service.get_colors();
+        let total_result = self.total_result.read().unwrap();
+        serde_json::json!({
+            "title": "Share Your Total Results",
+            "preview": line_json(&SharingView::preview_line(&total_result, &colors)),
+            "platforms": share_platforms_json(),
+            "backLabel": "Back to Exit Screen",
+            "fallback": share_fallback_json(self.fallback_url.read().unwrap().as_ref(), "Exit"),
+        })
+    }
+
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }

@@ -82,7 +82,11 @@ impl SessionSummaryShareScreen {
         match SharingService::share_result(session_result, platform.clone(), &git_repository) {
             ShareOutcome::Opened => self.event_bus.as_event_bus().publish(NavigateTo::Pop),
             ShareOutcome::Fallback(url) => {
-                log::warn!("Failed to open browser for {}. URL: {}", platform.name(), url);
+                log::warn!(
+                    "Failed to open browser for {}. URL: {}",
+                    platform.name(),
+                    url
+                );
                 *self.fallback_url.write().unwrap() = Some((url, platform));
             }
         }
@@ -213,6 +217,26 @@ impl Screen for SessionSummaryShareScreen {
 
     fn update(&self) -> Result<bool> {
         Ok(false)
+    }
+
+    fn view_model(&self) -> serde_json::Value {
+        use crate::presentation::ui::view_model::{
+            line_json, share_fallback_json, share_platforms_json,
+        };
+
+        let session_result = self.session_result.read().unwrap();
+        let Some(ref session_result) = *session_result else {
+            return serde_json::Value::Null;
+        };
+        let colors = self.theme_service.get_colors();
+        let git_repository = self.git_repository.read().unwrap();
+        serde_json::json!({
+            "title": "=== SHARE YOUR RESULT ===",
+            "preview": line_json(&SharePreviewView::preview_line(session_result, &git_repository, &colors)),
+            "platforms": share_platforms_json(),
+            "backLabel": "Back to Results",
+            "fallback": share_fallback_json(self.fallback_url.read().unwrap().as_ref(), "Back"),
+        })
     }
 
     fn as_any(&self) -> &dyn std::any::Any {

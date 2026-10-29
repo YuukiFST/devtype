@@ -84,7 +84,10 @@ impl StageResultsView {
         }
     }
 
-    fn get_stage_name(stage_result: &crate::domain::models::StageResult, index: usize) -> String {
+    pub fn get_stage_name(
+        stage_result: &crate::domain::models::StageResult,
+        index: usize,
+    ) -> String {
         if !stage_result.challenge_path.is_empty() {
             stage_result.challenge_path.clone()
         } else {
