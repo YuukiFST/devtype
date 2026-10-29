@@ -392,6 +392,27 @@ impl Screen for InfoDialogScreen {
         Ok(false)
     }
 
+    fn view_model(&self) -> serde_json::Value {
+        let options: Vec<&str> = Self::get_options()
+            .iter()
+            .map(|(label, _)| *label)
+            .collect();
+        match &*self.state.read().unwrap() {
+            InfoDialogState::Menu { selected_option } => serde_json::json!({
+                "title": "Information & Links",
+                "options": options,
+                "selectedOption": selected_option,
+                "fallback": serde_json::Value::Null,
+            }),
+            InfoDialogState::Fallback { title, url } => serde_json::json!({
+                "title": "Information & Links",
+                "options": options,
+                "selectedOption": 0,
+                "fallback": { "title": format!("Cannot open {}", title), "url": url },
+            }),
+        }
+    }
+
     fn as_any(&self) -> &dyn std::any::Any {
         self
     }
